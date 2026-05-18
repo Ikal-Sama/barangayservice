@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   MapPin,
   Phone,
-  Sparkles,
   Truck,
   Users,
   FileText,
