@@ -119,3 +119,26 @@ export const updateDocumentRequestStatusSchema = z.object({
 });
 export type UpdateDocumentRequestStatusInput = z.infer<typeof updateDocumentRequestStatusSchema>;
 
+// ── Incident Reports ──────────────────────────────────────────────────────────
+
+export const incidentReportSchema = z.object({
+  title: z.string().min(4, "Title must be at least 4 characters").max(100),
+  category: z.enum(["waste", "infrastructure", "noise", "safety", "health", "other"]),
+  description: z.string().min(10, "Description must be at least 10 characters").max(1000),
+  purokId: z
+    .string()
+    .uuid("Please select a valid Purok")
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v === "" ? undefined : v)),
+});
+export type IncidentReportInput = z.infer<typeof incidentReportSchema>;
+
+export const updateIncidentReportStatusSchema = z.object({
+  id: z.string().uuid(),
+  status: z.enum(["pending", "investigating", "resolved", "closed"]),
+  adminNotes: z.string().max(500).optional().or(z.literal("")),
+});
+export type UpdateIncidentReportStatusInput = z.infer<typeof updateIncidentReportStatusSchema>;
+
+

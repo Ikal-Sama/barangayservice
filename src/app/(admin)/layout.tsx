@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import AdminShell from "@/components/admin-shell";
 import { getPendingRequestsCount } from "@/lib/actions/documents";
+import { getPendingReportsCount } from "@/lib/actions/reports";
 
 export default async function AdminGroupLayout({
   children,
@@ -20,14 +21,19 @@ export default async function AdminGroupLayout({
     redirect("/login");
   }
 
-  const pendingRequestsCount = await getPendingRequestsCount();
+  const [pendingRequestsCount, pendingReportsCount] = await Promise.all([
+    getPendingRequestsCount(),
+    getPendingReportsCount(),
+  ]);
 
   return (
     <AdminShell 
       userName={session.user.name ?? "Admin"}
       pendingRequestsCount={pendingRequestsCount}
+      pendingReportsCount={pendingReportsCount}
     >
       {children}
     </AdminShell>
   );
 }
+

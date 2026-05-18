@@ -3,5 +3,8 @@ export const CACHE_TAGS = {
   emergencyContacts: "emergency-contacts",
   announcements: "announcements",
   wasteSchedules: "waste-schedules",
+  documentRequests: "document-requests",
+  incidentReports: "incident-reports",
 } as const;
+
 

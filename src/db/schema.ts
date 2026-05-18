@@ -56,6 +56,22 @@ export const requestStatusEnum = pgEnum("request_status", [
   "rejected",
 ]);
 
+export const reportCategoryEnum = pgEnum("report_category", [
+  "waste",
+  "infrastructure",
+  "noise",
+  "safety",
+  "health",
+  "other",
+]);
+
+export const reportStatusEnum = pgEnum("report_status", [
+  "pending",
+  "investigating",
+  "resolved",
+  "closed",
+]);
+
 // ─────────────────────────────────────────────
 // PUROKS  (neighborhood clusters)
 // ─────────────────────────────────────────────
@@ -315,6 +331,39 @@ export const documentRequests = pgTable(
 );
 
 // ─────────────────────────────────────────────
+// INCIDENT REPORTS
+// ─────────────────────────────────────────────
+
+export const incidentReports = pgTable(
+  "incident_reports",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    purokId: uuid("purok_id")
+      .references(() => puroks.id, { onDelete: "set null" }),
+    category: reportCategoryEnum("category").notNull().default("other"),
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    status: reportStatusEnum("status").notNull().default("pending"),
+    adminNotes: text("admin_notes"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("incident_reports_user_idx").on(t.userId),
+    index("incident_reports_purok_idx").on(t.purokId),
+    index("incident_reports_status_idx").on(t.status),
+    index("incident_reports_created_idx").on(t.createdAt),
+  ]
+);
+
+// ─────────────────────────────────────────────
 // RELATIONS
 // ─────────────────────────────────────────────
 
@@ -322,6 +371,7 @@ export const puroksRelations = relations(puroks, ({ many }) => ({
   users: many(users),
   wasteSchedules: many(wasteSchedules),
   announcementPuroks: many(announcementPuroks),
+  incidentReports: many(incidentReports),
 }));
 
 export const usersRelations = relations(users, ({ one, many }) => ({
@@ -330,6 +380,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   accounts: many(accounts),
   announcements: many(announcements),
   documentRequests: many(documentRequests),
+  incidentReports: many(incidentReports),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -389,6 +440,20 @@ export const documentRequestsRelations = relations(
   })
 );
 
+export const incidentReportsRelations = relations(
+  incidentReports,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [incidentReports.userId],
+      references: [users.id],
+    }),
+    purok: one(puroks, {
+      fields: [incidentReports.purokId],
+      references: [puroks.id],
+    }),
+  })
+);
+
 // ─────────────────────────────────────────────
 // TYPE EXPORTS  (inferred from schema)
 // ─────────────────────────────────────────────
@@ -410,4 +475,7 @@ export type NewEmergencyContact = typeof emergencyContacts.$inferInsert;
 
 export type DocumentRequest = typeof documentRequests.$inferSelect;
 export type NewDocumentRequest = typeof documentRequests.$inferInsert;
+
+export type IncidentReport = typeof incidentReports.$inferSelect;
+export type NewIncidentReport = typeof incidentReports.$inferInsert;
 
