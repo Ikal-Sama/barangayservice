@@ -89,15 +89,15 @@ export default function AdminShell({
         </nav>
 
         <div className="absolute bottom-5 left-4 right-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-cyan-100 text-cyan-700">
+          <Link href="/admin/profile" className="flex items-center gap-3 group rounded-xl p-1 hover:bg-slate-50 transition-colors">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-cyan-100 text-cyan-700 transition-transform group-hover:scale-105">
               <Users className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-slate-950">{userName}</p>
+              <p className="truncate text-sm font-bold text-slate-950 group-hover:text-cyan-700 transition-colors">{userName}</p>
               <p className="text-xs font-medium text-slate-500">Administrator</p>
             </div>
-          </div>
+          </Link>
           <div className="mt-4">
             <SignOutButton variant="full" />
           </div>

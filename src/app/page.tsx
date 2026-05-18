@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Sparkles,
   Truck,
+  FileText,
 } from "lucide-react";
 
 const features = [
@@ -38,6 +39,27 @@ const features = [
     description:
       "A lightweight portal designed for local service delivery and resident privacy.",
     tone: "bg-emerald-100 text-emerald-700",
+  },
+];
+
+const benefits = [
+  {
+    title: "Streamlined Requests",
+    desc: "Request barangay clearances and certificates online without waiting in long queues at the barangay hall.",
+    icon: FileText,
+    color: "bg-blue-100 text-blue-700",
+  },
+  {
+    title: "Community Safety First",
+    desc: "Instantly report incidents or access emergency hotlines to keep our neighborhoods safe and secure at all times.",
+    icon: ShieldCheck,
+    color: "bg-purple-100 text-purple-700",
+  },
+  {
+    title: "Stay Informed",
+    desc: "Never miss out on local events, health advisories, and important public announcements directly from the council.",
+    icon: Bell,
+    color: "bg-emerald-100 text-emerald-700",
   },
 ];
 
@@ -174,6 +196,50 @@ export default function LandingPage() {
               </p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── About the Portal Section ────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 py-16 lg:py-24 mt-4">
+        <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+          <div>
+            <h2 className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+              Empowering our Barangay, <br /> One Tap at a Time.
+            </h2>
+            <p className="mt-5 text-lg leading-8 text-slate-600 font-medium">
+              BarangayLink is more than just an app; it is a digital bridge connecting the barangay officials directly with the residents. Our mission is to provide transparent, fast, and reliable community services right to your smartphone.
+            </p>
+            <div className="mt-10 space-y-8">
+              {benefits.map((item, idx) => (
+                <div key={idx} className="flex gap-5">
+                  <div className={`shrink-0 grid h-14 w-14 place-items-center rounded-2xl ${item.color} shadow-sm`}>
+                    <item.icon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-slate-950">{item.title}</h3>
+                    <p className="mt-1.5 text-sm text-slate-500 leading-relaxed font-medium">
+                      {item.desc}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="relative lg:ml-auto w-full max-w-lg">
+            <div className="glass-card overflow-hidden p-8 sm:p-10 aspect-square flex flex-col justify-center relative bg-gradient-to-br from-slate-50 to-slate-100/50">
+               <div className="absolute inset-0 bg-app-grid opacity-50" />
+               <div className="relative z-10 text-center flex flex-col items-center">
+                 <div className="grid h-24 w-24 place-items-center rounded-[2rem] bg-slate-950 text-white shadow-2xl shadow-slate-950/20 mb-8 transform -rotate-3 transition hover:rotate-0">
+                    <Sparkles className="h-10 w-10 text-cyan-300" />
+                 </div>
+                 <h3 className="text-3xl font-black text-slate-950 mb-4 tracking-tight">Community First</h3>
+                 <p className="text-slate-600 text-base leading-relaxed font-medium">
+                   Designed specifically for the unique needs of our local community, ensuring that every resident has a voice and easy access to essential public services.
+                 </p>
+               </div>
+            </div>
+          </div>
         </div>
       </section>
     </main>
