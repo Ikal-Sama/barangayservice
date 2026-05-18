@@ -11,7 +11,14 @@ export const metadata: Metadata = {
     "Community utility portal for Barangay San Isidro — waste tracking, announcements, and emergency contacts.",
   keywords: ["barangay", "community", "waste tracker", "announcements", "Philippines"],
   manifest: "/manifest.json",
-  icons: { icon: "/logo.svg?v=3", apple: "/logo.svg?v=3" },
+  icons: {
+    icon: [
+      { url: "/icons/favicon-32x32.png?v=4", sizes: "32x32", type: "image/png" },
+      { url: "/icons/favicon-16x16.png?v=4", sizes: "16x16", type: "image/png" },
+    ],
+    shortcut: "/icons/favicon.ico?v=4",
+    apple: "/icons/apple-touch-icon.png?v=4",
+  },
 };
 
 export const viewport: Viewport = {
