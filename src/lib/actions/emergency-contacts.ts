@@ -33,16 +33,26 @@ export async function createEmergencyContact(
     };
   }
 
-  const [contact] = await db
-    .insert(emergencyContacts)
-    .values(parsed.data)
-    .returning({ id: emergencyContacts.id });
+  try {
+    const results = await db
+      .insert(emergencyContacts)
+      .values(parsed.data)
+      .returning({ id: emergencyContacts.id });
 
-  revalidatePath("/admin/contacts");
-  revalidatePath("/portal");
-  revalidateTag(CACHE_TAGS.emergencyContacts);
+    const contact = results[0];
+    if (!contact || !contact.id) {
+      return { success: false, error: "Failed to create emergency contact record." };
+    }
 
-  return { success: true, data: { id: contact.id }, message: "Contact added." };
+    revalidatePath("/admin/contacts");
+    revalidatePath("/portal");
+    revalidateTag(CACHE_TAGS.emergencyContacts);
+
+    return { success: true, data: { id: contact.id }, message: "Contact added." };
+  } catch (error: any) {
+    console.error("Database insert failed for emergency contact:", error);
+    return { success: false, error: "A database error occurred while creating the emergency contact." };
+  }
 }
 
 // ── Update ────────────────────────────────────────────────────────────────────
@@ -65,16 +75,26 @@ export async function updateEmergencyContact(
     };
   }
 
-  await db
-    .update(emergencyContacts)
-    .set(parsed.data)
-    .where(eq(emergencyContacts.id, id));
+  try {
+    const updatedRows = await db
+      .update(emergencyContacts)
+      .set(parsed.data)
+      .where(eq(emergencyContacts.id, id))
+      .returning({ id: emergencyContacts.id });
 
-  revalidatePath("/admin/contacts");
-  revalidatePath("/portal");
-  revalidateTag(CACHE_TAGS.emergencyContacts);
+    if (!updatedRows || updatedRows.length === 0) {
+      return { success: false, error: "Emergency contact not found or no changes were made." };
+    }
 
-  return { success: true, data: undefined, message: "Contact updated." };
+    revalidatePath("/admin/contacts");
+    revalidatePath("/portal");
+    revalidateTag(CACHE_TAGS.emergencyContacts);
+
+    return { success: true, data: undefined, message: "Contact updated." };
+  } catch (error: any) {
+    console.error("Database update failed for emergency contact:", error);
+    return { success: false, error: "A database error occurred while updating the emergency contact." };
+  }
 }
 
 // ── Delete (soft – set isActive false) ────────────────────────────────────────
@@ -87,16 +107,26 @@ export async function deleteEmergencyContact(
     return { success: false, error: "Unauthorized." };
   }
 
-  await db
-    .update(emergencyContacts)
-    .set({ isActive: false })
-    .where(eq(emergencyContacts.id, id));
+  try {
+    const updatedRows = await db
+      .update(emergencyContacts)
+      .set({ isActive: false })
+      .where(eq(emergencyContacts.id, id))
+      .returning({ id: emergencyContacts.id });
 
-  revalidatePath("/admin/contacts");
-  revalidatePath("/portal");
-  revalidateTag(CACHE_TAGS.emergencyContacts);
+    if (!updatedRows || updatedRows.length === 0) {
+      return { success: false, error: "Emergency contact not found or already removed." };
+    }
 
-  return { success: true, data: undefined, message: "Contact removed." };
+    revalidatePath("/admin/contacts");
+    revalidatePath("/portal");
+    revalidateTag(CACHE_TAGS.emergencyContacts);
+
+    return { success: true, data: undefined, message: "Contact removed." };
+  } catch (error: any) {
+    console.error("Database delete failed for emergency contact:", error);
+    return { success: false, error: "A database error occurred while removing the emergency contact." };
+  }
 }
 
 // ── Fetch all (admin view) ────────────────────────────────────────────────────

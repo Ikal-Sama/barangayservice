@@ -104,27 +104,37 @@ export async function createWasteSchedule(
 
   const { purokId, scheduledDate, notes } = parsed.data;
 
-  const [schedule] = await db
-    .insert(wasteSchedules)
-    .values({
-      purokId,
-      scheduledDate: new Date(scheduledDate),
-      status: "scheduled",
-      notes: notes ?? null,
-      updatedById: session.user.id,
-    })
-    .returning({ id: wasteSchedules.id });
+  try {
+    const results = await db
+      .insert(wasteSchedules)
+      .values({
+        purokId,
+        scheduledDate: new Date(scheduledDate),
+        status: "scheduled",
+        notes: notes ?? null,
+        updatedById: session.user.id,
+      })
+      .returning({ id: wasteSchedules.id });
 
-  revalidatePath("/basura");
-  revalidatePath("/portal");
-  revalidatePath("/admin");
-  revalidateTag(CACHE_TAGS.wasteSchedules);
+    const schedule = results[0];
+    if (!schedule || !schedule.id) {
+      return { success: false, error: "Failed to create waste schedule record." };
+    }
 
-  return {
-    success: true,
-    data: { id: schedule.id },
-    message: "Schedule created successfully.",
-  };
+    revalidatePath("/basura");
+    revalidatePath("/portal");
+    revalidatePath("/admin");
+    revalidateTag(CACHE_TAGS.wasteSchedules);
+
+    return {
+      success: true,
+      data: { id: schedule.id },
+      message: "Schedule created successfully.",
+    };
+  } catch (error: any) {
+    console.error("Database insert failed for waste schedule:", error);
+    return { success: false, error: "A database error occurred while creating the waste schedule." };
+  }
 }
 
 // ── Delete a waste schedule ───────────────────────────────────────────────────

@@ -33,14 +33,24 @@ export async function createPurok(
     };
   }
 
-  const [purok] = await db
-    .insert(puroks)
-    .values(parsed.data)
-    .returning({ id: puroks.id });
+  try {
+    const results = await db
+      .insert(puroks)
+      .values(parsed.data)
+      .returning({ id: puroks.id });
 
-  revalidatePath("/admin");
-  revalidateTag(CACHE_TAGS.puroks);
-  return { success: true, data: { id: purok.id }, message: "Purok created." };
+    const purok = results[0];
+    if (!purok || !purok.id) {
+      return { success: false, error: "Failed to create purok record." };
+    }
+
+    revalidatePath("/admin");
+    revalidateTag(CACHE_TAGS.puroks);
+    return { success: true, data: { id: purok.id }, message: "Purok created." };
+  } catch (error: any) {
+    console.error("Database insert failed for purok:", error);
+    return { success: false, error: "A database error occurred while creating the purok." };
+  }
 }
 
 // ── Update Purok ──────────────────────────────────────────────────────────────
@@ -63,14 +73,24 @@ export async function updatePurok(
     };
   }
 
-  await db
-    .update(puroks)
-    .set({ ...parsed.data, updatedAt: new Date() })
-    .where(eq(puroks.id, id));
+  try {
+    const updatedRows = await db
+      .update(puroks)
+      .set({ ...parsed.data, updatedAt: new Date() })
+      .where(eq(puroks.id, id))
+      .returning({ id: puroks.id });
 
-  revalidatePath("/admin");
-  revalidateTag(CACHE_TAGS.puroks);
-  return { success: true, data: undefined, message: "Purok updated." };
+    if (!updatedRows || updatedRows.length === 0) {
+      return { success: false, error: "Purok not found or no changes were made." };
+    }
+
+    revalidatePath("/admin");
+    revalidateTag(CACHE_TAGS.puroks);
+    return { success: true, data: undefined, message: "Purok updated." };
+  } catch (error: any) {
+    console.error("Database update failed for purok:", error);
+    return { success: false, error: "A database error occurred while updating the purok." };
+  }
 }
 
 // ── Fetch all puroks ──────────────────────────────────────────────────────────
