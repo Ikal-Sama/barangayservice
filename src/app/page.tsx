@@ -72,7 +72,7 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-40 border-b border-white/70 bg-white/80 px-4 py-3 backdrop-blur-2xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <Logo iconOnly={true} className="h-14 w-14 transition-transform group-hover:scale-105" />
+            <Logo iconOnly={true} className="h-8 w-10 transition-transform group-hover:scale-105" />
             <div>
               <p className="text-sm font-black tracking-tight">
                 Barangay<span className="text-sky-500">Link</span>
@@ -230,7 +230,7 @@ export default function LandingPage() {
             <div className="glass-card overflow-hidden p-8 sm:p-10 aspect-square flex flex-col justify-center relative bg-gradient-to-br from-slate-50 to-slate-100/50">
               <div className="absolute inset-0 bg-app-grid opacity-50" />
               <div className="relative z-10 text-center flex flex-col items-center">
-                <Logo iconOnly={true} className="h-28 w-28 mb-8 transform -rotate-3 transition hover:rotate-0 hover:scale-105 duration-300 drop-shadow-md" />
+                <Logo iconOnly={true} className="h-28 w-32 mb-8 transform -rotate-3 transition hover:rotate-0 hover:scale-105 duration-300 drop-shadow-md" />
                 <h3 className="text-3xl font-black text-slate-950 mb-4 tracking-tight">Community First</h3>
                 <p className="text-slate-600 text-base leading-relaxed font-medium">
                   Designed specifically for the unique needs of our local community, ensuring that every resident has a voice and easy access to essential public services.
