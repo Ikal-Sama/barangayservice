@@ -10,7 +10,7 @@ export default function Logo({ className = "h-10 w-10", iconOnly = false }: Logo
     <div className="flex items-center gap-3 select-none">
       <div className="relative flex items-center justify-center shrink-0">
         <img
-          src="/logo.png"
+          src="/logo.svg"
           alt="BarangayLink Logo"
           className={className}
         />
