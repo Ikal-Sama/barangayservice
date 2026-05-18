@@ -162,7 +162,7 @@ export default function LandingPage() {
 
               <div className="mt-5 space-y-3">
                 {[
-                  ["Purok 2 - Sampaguita", "Truck en route", "bg-amber-300"],
+                  ["Purok Sook", "Truck en route", "bg-amber-300"],
                   ["Health Center", "Clinic open", "bg-emerald-300"],
                   ["Emergency Hotline", "Online", "bg-cyan-300"],
                 ].map(([title, status, dot]) => (
