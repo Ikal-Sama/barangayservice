@@ -215,13 +215,17 @@ export async function loginWithPassword(
 
 export async function logout(): Promise<AuthActionResult> {
   const cookieStore = await cookies();
-  const token = getSignedCookiePayload(cookieStore.get(SESSION_COOKIE_NAME)?.value);
-
-  if (token) {
-    await db.delete(sessions).where(eq(sessions.token, token));
+  
+  try {
+    const token = getSignedCookiePayload(cookieStore.get(SESSION_COOKIE_NAME)?.value);
+    if (token) {
+      await db.delete(sessions).where(eq(sessions.token, token));
+    }
+  } catch (error) {
+    console.error("Database error during logout session deletion:", error);
+  } finally {
+    cookieStore.delete(SESSION_COOKIE_NAME);
   }
-
-  cookieStore.delete(SESSION_COOKIE_NAME);
 
   return {
     success: true,

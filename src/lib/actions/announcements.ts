@@ -36,38 +36,48 @@ export async function createAnnouncement(
   const { title, body, type, targetAllPuroks, purokIds, expiresAt, isActive } =
     parsed.data;
 
-  const [newAnnouncement] = await db
-    .insert(announcements)
-    .values({
-      title,
-      body,
-      type,
-      targetAllPuroks,
-      isActive,
-      authorId: session.user.id,
-      expiresAt: expiresAt ? new Date(expiresAt) : null,
-    })
-    .returning({ id: announcements.id });
+  try {
+    const results = await db
+      .insert(announcements)
+      .values({
+        title,
+        body,
+        type,
+        targetAllPuroks,
+        isActive,
+        authorId: session.user.id,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+      })
+      .returning({ id: announcements.id });
 
-  // Insert targeted purok join rows if not a broadcast
-  if (!targetAllPuroks && purokIds?.length) {
-    await db.insert(announcementPuroks).values(
-      purokIds.map((purokId) => ({
-        announcementId: newAnnouncement.id,
-        purokId,
-      }))
-    );
+    const newAnnouncement = results[0];
+    if (!newAnnouncement || !newAnnouncement.id) {
+      return { success: false, error: "Failed to create announcement record." };
+    }
+
+    // Insert targeted purok join rows if not a broadcast
+    if (!targetAllPuroks && purokIds?.length) {
+      await db.insert(announcementPuroks).values(
+        purokIds.map((purokId) => ({
+          announcementId: newAnnouncement.id,
+          purokId,
+        }))
+      );
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/portal");
+    revalidateTag(CACHE_TAGS.announcements);
+
+    return {
+      success: true,
+      data: { id: newAnnouncement.id },
+      message: "Announcement published successfully.",
+    };
+  } catch (error: any) {
+    console.error("Database insert failed for announcement:", error);
+    return { success: false, error: "A database error occurred while creating the announcement." };
   }
-
-  revalidatePath("/admin");
-  revalidatePath("/portal");
-  revalidateTag(CACHE_TAGS.announcements);
-
-  return {
-    success: true,
-    data: { id: newAnnouncement.id },
-    message: "Announcement published successfully.",
-  };
 }
 
 // ── Delete / deactivate announcement ─────────────────────────────────────────
@@ -80,16 +90,26 @@ export async function deleteAnnouncement(
     return { success: false, error: "Unauthorized." };
   }
 
-  await db
-    .update(announcements)
-    .set({ isActive: false, updatedAt: new Date() })
-    .where(eq(announcements.id, id));
+  try {
+    const updatedRows = await db
+      .update(announcements)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(announcements.id, id))
+      .returning({ id: announcements.id });
 
-  revalidatePath("/admin");
-  revalidatePath("/portal");
-  revalidateTag(CACHE_TAGS.announcements);
+    if (!updatedRows || updatedRows.length === 0) {
+      return { success: false, error: "Announcement not found or already removed." };
+    }
 
-  return { success: true, data: undefined, message: "Announcement removed." };
+    revalidatePath("/admin");
+    revalidatePath("/portal");
+    revalidateTag(CACHE_TAGS.announcements);
+
+    return { success: true, data: undefined, message: "Announcement removed." };
+  } catch (error: any) {
+    console.error("Database delete failed for announcement:", error);
+    return { success: false, error: "A database error occurred while removing the announcement." };
+  }
 }
 
 // ── Fetch active announcements for a specific Purok ───────────────────────────
