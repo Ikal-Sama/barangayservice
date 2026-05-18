@@ -99,7 +99,7 @@ export default function AdminShell({
             </div>
           </div>
           <div className="mt-4">
-            <SignOutButton />
+            <SignOutButton variant="full" />
           </div>
         </div>
       </aside>
