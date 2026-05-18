@@ -13,10 +13,18 @@ import { createId } from "@paralleldrive/cuid2";
 import { hashPassword } from "better-auth/crypto";
 import { eq } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
-import arcjet, { detectBot, request, slidingWindow } from "@arcjet/next";
+import arcjet, {
+  createRemoteClient,
+  detectBot,
+  request,
+  slidingWindow,
+} from "@arcjet/next";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
+  client: createRemoteClient({
+    timeout: 3000,
+  }),
   characteristics: ["ip.src"],
   rules: [
     detectBot({
@@ -70,10 +78,6 @@ export async function registerResident(
       success: false,
       error: "Automated requests are not allowed.",
     };
-  }
-
-  if (decision.isErrored()) {
-    console.warn("Arcjet error during registration:", decision.reason.message);
   }
 
   const parsed = registerSchema.safeParse(raw);
@@ -164,10 +168,6 @@ export async function loginWithPassword(
       success: false,
       error: "Automated requests are not allowed.",
     };
-  }
-
-  if (decision.isErrored()) {
-    console.warn("Arcjet error during login:", decision.reason.message);
   }
 
   const parsed = loginSchema.safeParse(raw);

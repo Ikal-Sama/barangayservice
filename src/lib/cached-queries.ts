@@ -1,9 +1,5 @@
 import "server-only";
 
-import {
-  unstable_cacheLife as cacheLife,
-  unstable_cacheTag as cacheTag,
-} from "next/cache";
 import { and, eq, gt, gte, isNull, lte, or } from "drizzle-orm";
 import { db } from "@/db";
 import {
@@ -12,7 +8,6 @@ import {
   puroks,
   wasteSchedules,
 } from "@/db/schema";
-import { CACHE_TAGS } from "@/lib/cache-tags";
 
 function dayRange(dateKey: string) {
   const start = new Date(`${dateKey}T00:00:00`);
@@ -21,20 +16,12 @@ function dayRange(dateKey: string) {
 }
 
 export async function getAllPuroksCached() {
-  "use cache";
-  cacheTag(CACHE_TAGS.puroks);
-  cacheLife("minutes");
-
   return db.query.puroks.findMany({
     orderBy: (p, { asc }) => [asc(p.name)],
   });
 }
 
 export async function getActivePuroksCached() {
-  "use cache";
-  cacheTag(CACHE_TAGS.puroks);
-  cacheLife("minutes");
-
   return db.query.puroks.findMany({
     where: (p, { eq: eqFn }) => eqFn(p.isActive, true),
     orderBy: (p, { asc }) => [asc(p.name)],
@@ -42,20 +29,12 @@ export async function getActivePuroksCached() {
 }
 
 export async function getAllEmergencyContactsCached() {
-  "use cache";
-  cacheTag(CACHE_TAGS.emergencyContacts);
-  cacheLife("minutes");
-
   return db.query.emergencyContacts.findMany({
     orderBy: (ec, { asc }) => [asc(ec.sortOrder), asc(ec.name)],
   });
 }
 
 export async function getActiveEmergencyContactsCached() {
-  "use cache";
-  cacheTag(CACHE_TAGS.emergencyContacts);
-  cacheLife("minutes");
-
   return db.query.emergencyContacts.findMany({
     where: eq(emergencyContacts.isActive, true),
     orderBy: (ec, { asc }) => [asc(ec.sortOrder), asc(ec.name)],
@@ -63,10 +42,6 @@ export async function getActiveEmergencyContactsCached() {
 }
 
 export async function getTodaySchedulesCached(dateKey: string) {
-  "use cache";
-  cacheTag(CACHE_TAGS.wasteSchedules);
-  cacheLife("minutes");
-
   const { start, end } = dayRange(dateKey);
 
   return db.query.wasteSchedules.findMany({
@@ -83,10 +58,6 @@ export async function getResidentScheduleCached(
   purokId: string,
   dateKey: string
 ) {
-  "use cache";
-  cacheTag(CACHE_TAGS.wasteSchedules);
-  cacheLife("minutes");
-
   const { start, end } = dayRange(dateKey);
 
   return db.query.wasteSchedules.findFirst({
@@ -101,10 +72,6 @@ export async function getResidentScheduleCached(
 }
 
 export async function getAnnouncementsForPurokCached(purokId: string) {
-  "use cache";
-  cacheTag(CACHE_TAGS.announcements);
-  cacheLife("minutes");
-
   const now = new Date();
   const rows = await db.query.announcements.findMany({
     where: and(
