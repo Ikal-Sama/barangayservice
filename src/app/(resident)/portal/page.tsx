@@ -9,6 +9,7 @@ import {
   getResidentScheduleCached,
 } from "@/lib/cached-queries";
 import {
+  AlertTriangle,
   Bell,
   CalendarClock,
   ChevronRight,
@@ -193,7 +194,7 @@ export default async function ResidentPortalPage() {
           </div>
         </section>
 
-        <section className="grid gap-4 sm:grid-cols-2">
+        <section className="grid gap-4 sm:grid-cols-3">
           <Link href="/portal/documents" className="glass-card p-6 flex items-center justify-between group transition hover:shadow-xl hover:shadow-slate-200/50">
             <div>
               <h2 className="text-xl font-black tracking-tight">Document Requests</h2>
@@ -201,6 +202,15 @@ export default async function ResidentPortalPage() {
             </div>
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-slate-950 text-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
               <FileText className="h-6 w-6" />
+            </div>
+          </Link>
+          <Link href="/portal/reports" className="glass-card p-6 flex items-center justify-between group transition hover:shadow-xl hover:shadow-slate-200/50">
+            <div>
+              <h2 className="text-xl font-black tracking-tight">Community Reports</h2>
+              <p className="mt-1 text-sm font-medium text-slate-500">Report neighborhood issues or file general feedback.</p>
+            </div>
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-rose-500 text-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <AlertTriangle className="h-6 w-6" />
             </div>
           </Link>
           <Link href="/profile" className="glass-card p-6 flex items-center justify-between group transition hover:shadow-xl hover:shadow-slate-200/50">

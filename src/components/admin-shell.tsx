@@ -11,12 +11,14 @@ import {
   Truck,
   Users,
   FileText,
+  AlertCircle,
 } from "lucide-react";
 import SignOutButton from "@/components/sign-out-button";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/requests", label: "Requests", icon: FileText },
+  { href: "/admin/reports", label: "Incident Reports", icon: AlertCircle },
   { href: "/admin/puroks", label: "Puroks", icon: MapPin },
   { href: "/admin/announcements", label: "Announcements", icon: Bell },
   { href: "/basura", label: "Basura Tracker", icon: Truck },
@@ -32,10 +34,12 @@ export default function AdminShell({
   children,
   userName,
   pendingRequestsCount = 0,
+  pendingReportsCount = 0,
 }: {
   children: React.ReactNode;
   userName: string;
   pendingRequestsCount?: number;
+  pendingReportsCount?: number;
 }) {
   const pathname = usePathname();
 
@@ -56,7 +60,10 @@ export default function AdminShell({
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = isActive(pathname, href);
             const isRequests = href === "/admin/requests";
-            const showBadge = isRequests && pendingRequestsCount > 0;
+            const isReports = href === "/admin/reports";
+            const showBadge = (isRequests && pendingRequestsCount > 0) || (isReports && pendingReportsCount > 0);
+            const badgeCount = isRequests ? pendingRequestsCount : pendingReportsCount;
+
             return (
               <Link
                 key={href}
@@ -72,10 +79,8 @@ export default function AdminShell({
                   <span>{label}</span>
                 </div>
                 {showBadge && (
-                  <span className={`grid h-5 min-w-[1.25rem] place-items-center rounded-full px-1 text-[10px] font-black ${
-                    active ? "bg-red-500 text-white" : "bg-red-500 text-white"
-                  }`}>
-                    {pendingRequestsCount > 99 ? "99+" : pendingRequestsCount}
+                  <span className="grid h-5 min-w-[1.25rem] place-items-center rounded-full px-1 text-[10px] font-black bg-red-500 text-white">
+                    {badgeCount > 99 ? "99+" : badgeCount}
                   </span>
                 )}
               </Link>
@@ -113,7 +118,10 @@ export default function AdminShell({
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = isActive(pathname, href);
             const isRequests = href === "/admin/requests";
-            const showBadge = isRequests && pendingRequestsCount > 0;
+            const isReports = href === "/admin/reports";
+            const showBadge = (isRequests && pendingRequestsCount > 0) || (isReports && pendingReportsCount > 0);
+            const badgeCount = isRequests ? pendingRequestsCount : pendingReportsCount;
+
             return (
               <Link
                 key={href}
@@ -126,7 +134,7 @@ export default function AdminShell({
                 {label}
                 {showBadge && (
                   <span className="absolute -right-1 -top-1 grid h-4 min-w-[1rem] place-items-center rounded-full bg-red-500 px-1 text-[8px] font-black text-white shadow-sm ring-2 ring-white">
-                    {pendingRequestsCount > 99 ? "99+" : pendingRequestsCount}
+                    {badgeCount > 99 ? "99+" : badgeCount}
                   </span>
                 )}
               </Link>
@@ -143,3 +151,4 @@ export default function AdminShell({
     </div>
   );
 }
+
