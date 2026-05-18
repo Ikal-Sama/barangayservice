@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     "Community utility portal for Barangay San Isidro — waste tracking, announcements, and emergency contacts.",
   keywords: ["barangay", "community", "waste tracker", "announcements", "Philippines"],
   manifest: "/manifest.json",
-  icons: { icon: "/logo.svg", apple: "/logo.svg" },
+  icons: { icon: "/logo.png", apple: "/logo.png" },
 };
 
 export const viewport: Viewport = {
