@@ -14,6 +14,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import SignOutButton from "@/components/sign-out-button";
+import Logo from "@/components/logo";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -46,14 +47,8 @@ export default function AdminShell({
   return (
     <div className="min-h-screen bg-app-grid text-slate-950">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-white/70 bg-white/80 px-4 py-5 shadow-[18px_0_70px_-45px_rgba(15,23,42,0.65)] backdrop-blur-2xl lg:block">
-        <Link href="/admin" className="flex items-center gap-3 px-2">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-slate-950 text-white shadow-lg shadow-slate-950/20">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-sm font-black tracking-tight">BarangayLink</p>
-            <p className="text-xs font-medium text-slate-500">Command Center</p>
-          </div>
+        <Link href="/admin" className="px-2 block">
+          <Logo />
         </Link>
 
         <nav className="mt-8 space-y-1.5">
@@ -106,11 +101,8 @@ export default function AdminShell({
 
       <header className="sticky top-0 z-30 border-b border-white/70 bg-white/80 px-4 py-3 backdrop-blur-2xl lg:hidden">
         <div className="flex items-center justify-between">
-          <Link href="/admin" className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-slate-950 text-white">
-              <Sparkles className="h-4 w-4" />
-            </div>
-            <span className="text-sm font-black">BarangayLink</span>
+          <Link href="/admin">
+            <Logo className="h-8 w-8" />
           </Link>
           <SignOutButton />
         </div>

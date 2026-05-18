@@ -6,10 +6,10 @@ import {
   Phone,
   Radio,
   ShieldCheck,
-  Sparkles,
   Truck,
   FileText,
 } from "lucide-react";
+import Logo from "@/components/logo";
 
 const features = [
   {
@@ -71,12 +71,14 @@ export default function LandingPage() {
     <main className="min-h-screen bg-app-grid text-slate-950">
       <nav className="sticky top-0 z-40 border-b border-white/70 bg-white/80 px-4 py-3 backdrop-blur-2xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-slate-950 text-white shadow-lg shadow-slate-950/15">
-              <Sparkles className="h-5 w-5" />
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-slate-950 text-white shadow-lg shadow-slate-950/15 transition-transform group-hover:scale-105">
+              <Logo iconOnly={true} className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-black tracking-tight">BarangayLink</p>
+              <p className="text-sm font-black tracking-tight">
+                Barangay<span className="text-sky-500">Link</span>
+              </p>
               <p className="hidden text-xs font-semibold text-slate-500 sm:block">
                 {barangayName}
               </p>
@@ -231,7 +233,7 @@ export default function LandingPage() {
                <div className="absolute inset-0 bg-app-grid opacity-50" />
                <div className="relative z-10 text-center flex flex-col items-center">
                  <div className="grid h-24 w-24 place-items-center rounded-[2rem] bg-slate-950 text-white shadow-2xl shadow-slate-950/20 mb-8 transform -rotate-3 transition hover:rotate-0">
-                    <Sparkles className="h-10 w-10 text-cyan-300" />
+                    <Logo iconOnly={true} className="h-12 w-12" />
                  </div>
                  <h3 className="text-3xl font-black text-slate-950 mb-4 tracking-tight">Community First</h3>
                  <p className="text-slate-600 text-base leading-relaxed font-medium">
