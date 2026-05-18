@@ -13,6 +13,23 @@ import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { eq } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { createHmac, randomBytes } from "node:crypto";
+import arcjet, { detectBot, slidingWindow } from "@arcjet/next";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  characteristics: ["ip.src"],
+  rules: [
+    detectBot({
+      mode: "LIVE",
+      allow: ["CATEGORY:SEARCH_ENGINE"],
+    }),
+    slidingWindow({
+      mode: "LIVE",
+      interval: 60,
+      max: 15, // Max 15 auth attempts per 60s per IP
+    }),
+  ],
+});
 
 type AuthActionResult<T = void> =
   | { success: true; data: T; message: string }
@@ -69,6 +86,25 @@ export async function canAttemptPasswordSignIn(email: string) {
 export async function registerResident(
   raw: RegisterInput
 ): Promise<AuthActionResult<{ id: string }>> {
+  // Arcjet Rate Limiting & Bot Protection
+  const requestHeaders = await headers();
+  const decision = await aj.protect({
+    headers: requestHeaders,
+  });
+
+  if (decision.isDenied()) {
+    if (decision.reason.isRateLimit()) {
+      return {
+        success: false,
+        error: "Too many registration attempts. Please slow down and try again later.",
+      };
+    }
+    return {
+      success: false,
+      error: "Automated requests are not allowed.",
+    };
+  }
+
   const parsed = registerSchema.safeParse(raw);
 
   if (!parsed.success) {
@@ -142,6 +178,25 @@ export async function registerResident(
 export async function loginWithPassword(
   raw: LoginInput
 ): Promise<AuthActionResult<{ role: "admin" | "resident" }>> {
+  // Arcjet Rate Limiting & Bot Protection
+  const requestHeaders = await headers();
+  const decision = await aj.protect({
+    headers: requestHeaders,
+  });
+
+  if (decision.isDenied()) {
+    if (decision.reason.isRateLimit()) {
+      return {
+        success: false,
+        error: "Too many login attempts. Please slow down and try again later.",
+      };
+    }
+    return {
+      success: false,
+      error: "Automated requests are not allowed.",
+    };
+  }
+
   const parsed = loginSchema.safeParse(raw);
 
   if (!parsed.success) {
@@ -179,7 +234,6 @@ export async function loginWithPassword(
     return { success: false, error: "Invalid email or password." };
   }
 
-  const requestHeaders = await headers();
   const token = createSessionToken();
   const now = new Date();
   const expiresAt = new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1000);
