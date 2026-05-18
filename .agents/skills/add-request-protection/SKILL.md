@@ -90,7 +90,7 @@ Search the project for an existing shared Arcjet client file (commonly `lib/arcj
 2. Check if `ARCJET_KEY` is set in the environment file (`.env.local` for Next.js/Astro, `.env` for others). If not, obtain the key in this priority order:
    1. **CLI (preferred):** Run `arcjet sites get-key --site-id <site-id>` (requires `arcjet auth login` first — see Step 0)
    2. **MCP:** If the Arcjet MCP server is connected, use `list-teams` → `list-sites` → `get-site-key`
-   3. **Manual (last resort):** Add a placeholder and tell the user to get a key from https://app.arcjet.com
+   3. **Manual (last resort):** Add a placeholder and ask the user to obtain a key from https://app.arcjet.com
    - Also add `ARCJET_ENV=development` to the env file
 3. Create a shared client file with `shield()` as the base rule. This file should export the Arcjet instance for reuse across routes with `withRule()`.
 
