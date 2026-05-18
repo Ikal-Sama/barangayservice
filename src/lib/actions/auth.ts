@@ -8,11 +8,11 @@ import {
   type LoginInput,
   type RegisterInput,
 } from "@/lib/validations";
+import { auth } from "@/lib/auth";
 import { createId } from "@paralleldrive/cuid2";
-import { hashPassword, verifyPassword } from "better-auth/crypto";
+import { hashPassword } from "better-auth/crypto";
 import { eq } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
-import { randomBytes } from "node:crypto";
 import arcjet, { detectBot, request, slidingWindow } from "@arcjet/next";
 
 const aj = arcjet({
@@ -36,12 +36,6 @@ type AuthActionResult<T = void> =
   | { success: false; error: string; fieldErrors?: Record<string, string[]> };
 
 const SESSION_COOKIE_NAME = "better-auth.session_token";
-const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
-
-
-function createSessionToken() {
-  return randomBytes(32).toString("base64url");
-}
 
 export async function canAttemptPasswordSignIn(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
@@ -189,60 +183,26 @@ export async function loginWithPassword(
   const email = parsed.data.email.trim().toLowerCase();
   const password = parsed.data.password;
 
-  const user = await db.query.users.findFirst({
-    where: eq(users.email, email),
-    with: {
-      accounts: true,
-    },
-  });
+  const signInResult = await auth.api
+    .signInEmail({
+      body: {
+        email,
+        password,
+        rememberMe: true,
+      },
+      headers: await headers(),
+    })
+    .catch(() => null);
 
-  const credentialAccount = user?.accounts.find(
-    (account) => account.providerId === "credential"
-  );
-
-  if (!user || !credentialAccount?.password) {
+  if (!signInResult) {
     return { success: false, error: "Invalid email or password." };
   }
 
-  const isValidPassword = await verifyPassword({
-    hash: credentialAccount.password,
-    password,
-  });
-
-  if (!isValidPassword) {
-    return { success: false, error: "Invalid email or password." };
-  }
-
-  const token = createSessionToken();
-  const requestHeaders = await headers();
-  const now = new Date();
-  const expiresAt = new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1000);
-
-  await db.insert(sessions).values({
-    id: createId(),
-    token,
-    userId: user.id,
-    expiresAt,
-    ipAddress:
-      requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
-    userAgent: requestHeaders.get("user-agent"),
-    createdAt: now,
-    updatedAt: now,
-  });
-
-  const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE_NAME, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: SESSION_MAX_AGE_SECONDS,
-    expires: expiresAt,
-  });
+  const role = signInResult.user.role === "admin" ? "admin" : "resident";
 
   return {
     success: true,
-    data: { role: user.role },
+    data: { role },
     message: "Welcome back!",
   };
 }
