@@ -42,6 +42,27 @@ const features = [
   },
 ];
 
+const benefits = [
+  {
+    title: "Streamlined Requests",
+    desc: "Request barangay clearances and certificates online without waiting in long queues at the barangay hall.",
+    icon: FileText,
+    color: "bg-blue-100 text-blue-700",
+  },
+  {
+    title: "Community Safety First",
+    desc: "Instantly report incidents or access emergency hotlines to keep our neighborhoods safe and secure at all times.",
+    icon: ShieldCheck,
+    color: "bg-purple-100 text-purple-700",
+  },
+  {
+    title: "Stay Informed",
+    desc: "Never miss out on local events, health advisories, and important public announcements directly from the council.",
+    icon: Bell,
+    color: "bg-emerald-100 text-emerald-700",
+  },
+];
+
 export default function LandingPage() {
   const barangayName =
     process.env.NEXT_PUBLIC_BARANGAY_NAME ?? "Barangay San Isidro";
@@ -190,26 +211,7 @@ export default function LandingPage() {
             </p>
             
             <div className="mt-10 space-y-8">
-              {[
-                {
-                  title: "Streamlined Requests",
-                  desc: "Request barangay clearances and certificates online without waiting in long queues at the barangay hall.",
-                  icon: FileText,
-                  color: "bg-blue-100 text-blue-700",
-                },
-                {
-                  title: "Community Safety First",
-                  desc: "Instantly report incidents or access emergency hotlines to keep our neighborhoods safe and secure at all times.",
-                  icon: ShieldCheck,
-                  color: "bg-purple-100 text-purple-700",
-                },
-                {
-                  title: "Stay Informed",
-                  desc: "Never miss out on local events, health advisories, and important public announcements directly from the council.",
-                  icon: Bell,
-                  color: "bg-emerald-100 text-emerald-700",
-                },
-              ].map((item, idx) => (
+              {benefits.map((item, idx) => (
                 <div key={idx} className="flex gap-5">
                   <div className={`shrink-0 grid h-14 w-14 place-items-center rounded-2xl ${item.color} shadow-sm`}>
                     <item.icon className="h-6 w-6" />

@@ -18,7 +18,7 @@ export default function AdminProfileClient({ user }: AdminProfileClientProps) {
   const router = useRouter();
   
   const [name, setName] = useState(user.name || "");
-  const [email, setEmail] = useState(user.email || "");
+  const [email] = useState(user.email || "");
   
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
