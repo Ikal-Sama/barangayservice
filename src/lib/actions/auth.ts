@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { accounts, puroks, sessions, users } from "@/db/schema";
+import { accounts, puroks, users } from "@/db/schema";
 import {
   loginSchema,
   registerSchema,
@@ -12,7 +12,7 @@ import { auth } from "@/lib/auth";
 import { createId } from "@paralleldrive/cuid2";
 import { hashPassword } from "better-auth/crypto";
 import { eq } from "drizzle-orm";
-import { cookies, headers } from "next/headers";
+import { headers } from "next/headers";
 import arcjet, {
   createRemoteClient,
   detectBot,
@@ -42,8 +42,6 @@ const aj = arcjet({
 type AuthActionResult<T = void> =
   | { success: true; data: T; message: string }
   | { success: false; error: string; fieldErrors?: Record<string, string[]> };
-
-const SESSION_COOKIE_NAME = "better-auth.session_token";
 
 export async function canAttemptPasswordSignIn(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
@@ -208,17 +206,17 @@ export async function loginWithPassword(
 }
 
 export async function logout(): Promise<AuthActionResult> {
-  const cookieStore = await cookies();
-  
-  try {
-    const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-    if (token) {
-      await db.delete(sessions).where(eq(sessions.token, token));
-    }
-  } catch (error) {
-    console.error("Database error during logout session deletion:", error);
-  } finally {
-    cookieStore.delete(SESSION_COOKIE_NAME);
+  const result = await auth.api
+    .signOut({
+      headers: await headers(),
+    })
+    .catch(() => null);
+
+  if (!result?.success) {
+    return {
+      success: false,
+      error: "Unable to sign out. Please try again.",
+    };
   }
 
   return {
