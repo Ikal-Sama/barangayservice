@@ -5,7 +5,7 @@ interface LogoProps {
   iconOnly?: boolean;
 }
 
-export default function Logo({ className = "h-9 w-9", iconOnly = false }: LogoProps) {
+export default function Logo({ className = "h-10 w-10", iconOnly = false }: LogoProps) {
   return (
     <div className="flex items-center gap-3 select-none">
       <div className="relative flex items-center justify-center shrink-0">

@@ -230,9 +230,7 @@ export default function LandingPage() {
             <div className="glass-card overflow-hidden p-8 sm:p-10 aspect-square flex flex-col justify-center relative bg-gradient-to-br from-slate-50 to-slate-100/50">
                <div className="absolute inset-0 bg-app-grid opacity-50" />
                <div className="relative z-10 text-center flex flex-col items-center">
-                  <div className="grid h-24 w-24 place-items-center rounded-[2rem] bg-white border border-slate-100/80 shadow-xl shadow-slate-200/50 mb-8 transform -rotate-3 transition hover:rotate-0">
-                     <Logo iconOnly={true} className="h-14 w-14" />
-                  </div>
+                  <Logo iconOnly={true} className="h-28 w-28 mb-8 transform -rotate-3 transition hover:rotate-0 hover:scale-105 duration-300 drop-shadow-md" />
                  <h3 className="text-3xl font-black text-slate-950 mb-4 tracking-tight">Community First</h3>
                  <p className="text-slate-600 text-base leading-relaxed font-medium">
                    Designed specifically for the unique needs of our local community, ensuring that every resident has a voice and easy access to essential public services.
