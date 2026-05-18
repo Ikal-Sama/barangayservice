@@ -209,7 +209,6 @@ export default function LandingPage() {
             <p className="mt-5 text-lg leading-8 text-slate-600 font-medium">
               BarangayLink is more than just an app; it is a digital bridge connecting the barangay officials directly with the residents. Our mission is to provide transparent, fast, and reliable community services right to your smartphone.
             </p>
-            
             <div className="mt-10 space-y-8">
               {benefits.map((item, idx) => (
                 <div key={idx} className="flex gap-5">
