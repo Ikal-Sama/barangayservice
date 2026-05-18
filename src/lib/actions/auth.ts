@@ -13,7 +13,7 @@ import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { eq } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { randomBytes } from "node:crypto";
-import arcjet, { detectBot, slidingWindow } from "@arcjet/next";
+import arcjet, { detectBot, request, slidingWindow } from "@arcjet/next";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
@@ -62,10 +62,8 @@ export async function registerResident(
   raw: RegisterInput
 ): Promise<AuthActionResult<{ id: string }>> {
   // Arcjet Rate Limiting & Bot Protection
-  const requestHeaders = await headers();
-  const decision = await aj.protect({
-    headers: requestHeaders,
-  });
+  const arcjetRequest = await request();
+  const decision = await aj.protect(arcjetRequest);
 
   if (decision.isDenied()) {
     if (decision.reason.isRateLimit()) {
@@ -78,6 +76,10 @@ export async function registerResident(
       success: false,
       error: "Automated requests are not allowed.",
     };
+  }
+
+  if (decision.isErrored()) {
+    console.warn("Arcjet error during registration:", decision.reason.message);
   }
 
   const parsed = registerSchema.safeParse(raw);
@@ -154,10 +156,8 @@ export async function loginWithPassword(
   raw: LoginInput
 ): Promise<AuthActionResult<{ role: "admin" | "resident" }>> {
   // Arcjet Rate Limiting & Bot Protection
-  const requestHeaders = await headers();
-  const decision = await aj.protect({
-    headers: requestHeaders,
-  });
+  const arcjetRequest = await request();
+  const decision = await aj.protect(arcjetRequest);
 
   if (decision.isDenied()) {
     if (decision.reason.isRateLimit()) {
@@ -170,6 +170,10 @@ export async function loginWithPassword(
       success: false,
       error: "Automated requests are not allowed.",
     };
+  }
+
+  if (decision.isErrored()) {
+    console.warn("Arcjet error during login:", decision.reason.message);
   }
 
   const parsed = loginSchema.safeParse(raw);
@@ -210,6 +214,7 @@ export async function loginWithPassword(
   }
 
   const token = createSessionToken();
+  const requestHeaders = await headers();
   const now = new Date();
   const expiresAt = new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1000);
 
