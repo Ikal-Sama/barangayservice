@@ -12,7 +12,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { eq } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
-import { createHmac, randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import arcjet, { detectBot, slidingWindow } from "@arcjet/next";
 
 const aj = arcjet({
@@ -38,31 +38,6 @@ type AuthActionResult<T = void> =
 const SESSION_COOKIE_NAME = "better-auth.session_token";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
-function getAuthSecret() {
-  return (
-    process.env.BETTER_AUTH_SECRET ||
-    process.env.AUTH_SECRET ||
-    "better-auth-secret-12345678901234567890"
-  );
-}
-
-function signCookieValue(value: string) {
-  const signature = createHmac("sha256", getAuthSecret())
-    .update(value)
-    .digest("base64");
-
-  return `${value}.${signature}`;
-}
-
-function getSignedCookiePayload(value: string | undefined) {
-  if (!value) return null;
-
-  const decoded = decodeURIComponent(value);
-  const signatureStart = decoded.lastIndexOf(".");
-  if (signatureStart < 1) return null;
-
-  return decoded.substring(0, signatureStart);
-}
 
 function createSessionToken() {
   return randomBytes(32).toString("base64url");
@@ -251,7 +226,7 @@ export async function loginWithPassword(
   });
 
   const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE_NAME, signCookieValue(token), {
+  cookieStore.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -271,7 +246,7 @@ export async function logout(): Promise<AuthActionResult> {
   const cookieStore = await cookies();
   
   try {
-    const token = getSignedCookiePayload(cookieStore.get(SESSION_COOKIE_NAME)?.value);
+    const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
     if (token) {
       await db.delete(sessions).where(eq(sessions.token, token));
     }
