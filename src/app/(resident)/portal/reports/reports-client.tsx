@@ -91,30 +91,36 @@ export function ResidentReportsClient({
 
   const onSubmit = (data: IncidentReportInput) => {
     startTransition(async () => {
-      const res = await createIncidentReport(data);
-      if (res.success) {
-        toast.success(res.message);
-        setIsSubmitOpen(false);
-        reset();
-        // Optimistically add report to local state with current date
-        const selectedPurok = puroks.find((p) => p.id === data.purokId) || null;
-        const newReport: ReportType = {
-          id: res.data.id,
-          title: data.title,
-          category: data.category,
-          description: data.description,
-          status: "pending",
-          adminNotes: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          purok: selectedPurok,
-        };
-        setReports((prev) => [newReport, ...prev]);
-      } else {
-        toast.error(res.error || "Failed to submit report.");
+      try {
+        const res = await createIncidentReport(data);
+        if (res.success) {
+          toast.success(res.message);
+          setIsSubmitOpen(false);
+          reset();
+          // Optimistically add report to local state with current date
+          const selectedPurok = puroks.find((p) => p.id === data.purokId) || null;
+          const newReport: ReportType = {
+            id: res.data.id,
+            title: data.title,
+            category: data.category,
+            description: data.description,
+            status: "pending",
+            adminNotes: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            purok: selectedPurok,
+          };
+          setReports((prev) => [newReport, ...prev]);
+        } else {
+          toast.error(res.error || "Failed to submit report.");
+        }
+      } catch (err: any) {
+        console.error("Error submitting incident report:", err);
+        toast.error(err?.message || "An unexpected error occurred while submitting your report.");
       }
     });
   };
+
 
   return (
     <div className="space-y-6">

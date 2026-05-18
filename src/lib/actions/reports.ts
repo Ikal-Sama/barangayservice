@@ -39,27 +39,37 @@ export async function createIncidentReport(
 
   const { title, category, description, purokId } = parsed.data;
 
-  const [newReport] = await db
-    .insert(incidentReports)
-    .values({
-      userId: session.user.id,
-      purokId: purokId || null,
-      category,
-      title,
-      description,
-      status: "pending",
-    })
-    .returning({ id: incidentReports.id });
+  try {
+    const results = await db
+      .insert(incidentReports)
+      .values({
+        userId: session.user.id,
+        purokId: purokId || null,
+        category,
+        title,
+        description,
+        status: "pending",
+      })
+      .returning({ id: incidentReports.id });
 
-  revalidatePath("/portal/reports");
-  revalidatePath("/admin/reports");
-  revalidateTag(CACHE_TAGS.incidentReports);
+    const newReport = results[0];
+    if (!newReport || !newReport.id) {
+      return { success: false, error: "Failed to create incident report record." };
+    }
 
-  return {
-    success: true,
-    data: { id: newReport.id },
-    message: "Report submitted successfully.",
-  };
+    revalidatePath("/portal/reports");
+    revalidatePath("/admin/reports");
+    revalidateTag(CACHE_TAGS.incidentReports);
+
+    return {
+      success: true,
+      data: { id: newReport.id },
+      message: "Report submitted successfully.",
+    };
+  } catch (error: any) {
+    console.error("Database insert failed for incident report:", error);
+    return { success: false, error: "A database error occurred while filing the report." };
+  }
 }
 
 // ── Update Incident Report Status ─────────────────────────────────────────────
@@ -83,21 +93,32 @@ export async function updateIncidentReportStatus(
 
   const { id, status, adminNotes } = parsed.data;
 
-  await db
-    .update(incidentReports)
-    .set({
-      status,
-      adminNotes: adminNotes || null,
-      updatedAt: new Date(),
-    })
-    .where(eq(incidentReports.id, id));
+  try {
+    const updatedRows = await db
+      .update(incidentReports)
+      .set({
+        status,
+        adminNotes: adminNotes || null,
+        updatedAt: new Date(),
+      })
+      .where(eq(incidentReports.id, id))
+      .returning({ id: incidentReports.id });
 
-  revalidatePath("/portal/reports");
-  revalidatePath("/admin/reports");
-  revalidateTag(CACHE_TAGS.incidentReports);
+    if (!updatedRows || updatedRows.length === 0) {
+      return { success: false, error: "Incident report not found or no changes were made." };
+    }
 
-  return { success: true, data: undefined, message: "Report status updated." };
+    revalidatePath("/portal/reports");
+    revalidatePath("/admin/reports");
+    revalidateTag(CACHE_TAGS.incidentReports);
+
+    return { success: true, data: undefined, message: "Report status updated." };
+  } catch (error: any) {
+    console.error("Database update failed for incident report:", error);
+    return { success: false, error: "A database error occurred while updating the status." };
+  }
 }
+
 
 // ── Fetch User Incident Reports ───────────────────────────────────────────────
 

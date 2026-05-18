@@ -106,36 +106,44 @@ export function AdminReportsClient({ initialReports }: AdminReportsClientProps) 
 
   const onSubmit = (data: UpdateIncidentReportStatusInput) => {
     startTransition(async () => {
-      const res = await updateIncidentReportStatus(data);
-      if (res.success) {
-        toast.success(res.message);
-        // Update local state to maintain snappy reactive UX
-        setReports((prev) =>
-          prev.map((r) =>
-            r.id === data.id
+      try {
+        const res = await updateIncidentReportStatus(data);
+        if (res.success) {
+          toast.success(res.message);
+          // Update local state to maintain snappy reactive UX
+          setReports((prev) =>
+            prev.map((r) =>
+              r.id === data.id
+                ? {
+                    ...r,
+                    status: data.status,
+                    adminNotes: data.adminNotes || null,
+                    updatedAt: new Date(),
+                  }
+                : r
+            )
+          );
+          // Sync selected report display safely using a functional updater to avoid overwriting a newly-selected report
+          setSelectedReport((prev) =>
+            prev && prev.id === data.id
               ? {
-                  ...r,
+                  ...prev,
                   status: data.status,
                   adminNotes: data.adminNotes || null,
                   updatedAt: new Date(),
                 }
-              : r
-          )
-        );
-        // Sync selected report display
-        if (selectedReport) {
-          setSelectedReport({
-            ...selectedReport,
-            status: data.status,
-            adminNotes: data.adminNotes || null,
-            updatedAt: new Date(),
-          });
+              : prev
+          );
+        } else {
+          toast.error(res.error || "Failed to update report status.");
         }
-      } else {
-        toast.error(res.error || "Failed to update report status.");
+      } catch (err: any) {
+        console.error("Error updating incident report:", err);
+        toast.error(err?.message || "An unexpected error occurred while updating the report.");
       }
     });
   };
+
 
   // Metrics Calculations
   const totalCount = reports.length;

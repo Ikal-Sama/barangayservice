@@ -21,10 +21,21 @@ export default async function AdminGroupLayout({
     redirect("/login");
   }
 
-  const [pendingRequestsCount, pendingReportsCount] = await Promise.all([
+  const results = await Promise.allSettled([
     getPendingRequestsCount(),
     getPendingReportsCount(),
   ]);
+
+  const pendingRequestsCount =
+    results[0].status === "fulfilled"
+      ? results[0].value
+      : (console.error("Failed to load pending requests count:", results[0].reason), 0);
+
+  const pendingReportsCount =
+    results[1].status === "fulfilled"
+      ? results[1].value
+      : (console.error("Failed to load pending reports count:", results[1].reason), 0);
+
 
   return (
     <AdminShell 
