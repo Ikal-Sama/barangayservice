@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+# CodeRabbit Configuration File
+# For more information, visit: https://docs.coderabbit.ai/
+
+language: "en-US" # The language CodeRabbit will use for reviews
+
+reviews:
+  profile: "assertive" # Options: "chill" (relaxed, fewer suggestions) or "assertive" (thorough, more suggestions)
+  high_level_summary: true # Generate a markdown summary of the PR at the top
+  poem: true # Generate a short poem summarizing the changes (a fun CodeRabbit feature!)
+  auto_approval: false # Set to true if you want CodeRabbit to auto-approve safe PRs
+
+  # Path exclusions - tell CodeRabbit to skip reviewing these files
+  path_filters:
+    - "!node_modules/**"
+    - "!.next/**"
+    - "!public/**"
+    - "!package-lock.json"
+    - "!.env*"
+    - "!**/*.tsbuildinfo"
+
+chat:
+  auto_reply: true # Automatically reply when developers tag or reply to @coderabbitai comments
