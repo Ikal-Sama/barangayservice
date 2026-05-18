@@ -4,7 +4,7 @@ import type { Session } from "@/lib/auth";
 // ── Route protection config ───────────────────────────────────────────────────
 const ADMIN_ROUTES = ["/admin", "/basura"];
 const AUTH_ROUTES  = ["/login", "/register"];
-const PUBLIC_PATHS = ["/", "/api/auth", "/login", "/register"];
+const PUBLIC_PATHS = ["/", "/api/auth", "/login", "/register", "/manifest.json"];
 
 function isPublic(pathname: string) {
   return PUBLIC_PATHS.some((p) =>
