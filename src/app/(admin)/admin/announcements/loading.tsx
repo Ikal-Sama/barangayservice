@@ -7,7 +7,7 @@ export default function Loading() {
           <div className="h-8 w-8 bg-white/15 skeleton" />
           <div className="h-6 w-48 bg-white/15 skeleton" />
         </div>
-        <div className="h-8 w-20 bg-white/15 skeleton" /></div>
+        <div className="h-8 w-20 bg-white/15 skeleton" />
       </section>
 
       {/* List placeholders */}
