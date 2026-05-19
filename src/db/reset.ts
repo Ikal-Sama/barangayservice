@@ -18,8 +18,9 @@ async function reset() {
       sessions, 
       accounts, 
       puroks, 
-      announcements, 
-      announcement_puroks, 
+      announcements,
+      announcement_puroks,
+      announcement_reads,
       waste_schedules, 
       emergency_contacts, 
       verifications 

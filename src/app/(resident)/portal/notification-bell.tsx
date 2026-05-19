@@ -1,91 +1,65 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Bell } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { getAnnouncementsForPurok } from "@/lib/actions/announcements";
+import {
+  getAnnouncementsForPurok,
+  markAnnouncementsAsRead,
+} from "@/lib/actions/announcements";
+
 export function NotificationBell({
   initialAnnouncements,
+  initialReadIds,
   purokId,
 }: {
   initialAnnouncements: { id: string; createdAt: Date | string }[];
+  initialReadIds: string[];
   purokId?: string | null;
 }) {
-  const router = useRouter();
   const [announcements, setAnnouncements] = useState(initialAnnouncements);
-  const [readIds, setReadIds] = useState<string[]>([]);
+  const [readIds, setReadIds] = useState<string[]>(initialReadIds);
   const [unreadCount, setUnreadCount] = useState(0);
+  const previousUnreadCount = useRef(
+    initialAnnouncements.filter((a) => !initialReadIds.includes(a.id)).length
+  );
 
-  // Initialize read IDs from localStorage
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("readAnnouncements");
-      if (stored) {
-        setReadIds(JSON.parse(stored));
-      }
-    } catch (e) {}
-  }, []);
-
-  // Update unread count when announcements or readIds change
   useEffect(() => {
     const unread = announcements.filter((a) => !readIds.includes(a.id));
     setUnreadCount(unread.length);
+
+    if (unread.length > previousUnreadCount.current) {
+      playNotificationSound();
+    }
+    previousUnreadCount.current = unread.length;
   }, [announcements, readIds]);
 
-  // Play sound when new announcements arrive on initial load if unread > 0, 
-  // but to avoid playing every reload, we only play if the most recent announcement
-  // is newer than what we have in localStorage's latest seen.
-  useEffect(() => {
-    try {
-      const unread = announcements.filter((a) => !readIds.includes(a.id));
-      if (unread.length > 0) {
-        const lastSeenStr = localStorage.getItem("lastSeenAnnouncementTime");
-        const lastSeenTime = lastSeenStr ? new Date(lastSeenStr).getTime() : 0;
-        
-        // Find the newest announcement time among unread
-        let newestTime = 0;
-        unread.forEach(a => {
-          const t = new Date(a.createdAt).getTime();
-          if (t > newestTime) newestTime = t;
-        });
-
-        if (newestTime > lastSeenTime) {
-          playNotificationSound();
-          router.refresh();
-          localStorage.setItem("lastSeenAnnouncementTime", new Date(newestTime).toISOString());
-        }
-      }
-    } catch(e) {}
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [announcements, readIds, router]);
-
-  // Polling for new announcements
   useEffect(() => {
     if (!purokId) return;
 
     const interval = setInterval(async () => {
       try {
         const latest = await getAnnouncementsForPurok(purokId);
-        setAnnouncements(latest as any);
+        setAnnouncements(latest);
       } catch (error) {
         console.error("Failed to fetch announcements", error);
       }
-    }, 15000); // Poll every 15 seconds
+    }, 15000);
 
     return () => clearInterval(interval);
   }, [purokId]);
 
   const playNotificationSound = () => {
     try {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioContextClass =
+        window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!AudioContextClass) return;
       const ctx = new AudioContextClass();
       const osc = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
       osc.type = "sine";
-      osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
 
       gainNode.gain.setValueAtTime(0, ctx.currentTime);
       gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
@@ -101,15 +75,32 @@ export function NotificationBell({
     }
   };
 
-  const handleMarkAsRead = useCallback(() => {
-    const newReadIds = Array.from(new Set([...readIds, ...announcements.map((a) => a.id)]));
-    setReadIds(newReadIds);
-    try {
-      localStorage.setItem("readAnnouncements", JSON.stringify(newReadIds));
-    } catch (e) {}
+  const handleMarkAsRead = useCallback(async () => {
+    const unreadIds = announcements
+      .filter((a) => !readIds.includes(a.id))
+      .map((a) => a.id);
 
-    // Scroll to announcements section
-    document.getElementById("community-announcements")?.scrollIntoView({ behavior: "smooth" });
+    if (unreadIds.length === 0) {
+      document
+        .getElementById("community-announcements")
+        ?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+
+    const previousReadIds = readIds;
+    const newReadIds = Array.from(new Set([...previousReadIds, ...unreadIds]));
+    setReadIds(newReadIds);
+
+    const result = await markAnnouncementsAsRead(unreadIds);
+    if (!result.success) {
+      setReadIds(previousReadIds);
+      console.error(result.error);
+      return;
+    }
+
+    document
+      .getElementById("community-announcements")
+      ?.scrollIntoView({ behavior: "smooth" });
   }, [announcements, readIds]);
 
   return (

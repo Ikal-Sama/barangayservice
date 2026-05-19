@@ -3,7 +3,10 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { getAnnouncementsForPurok } from "@/lib/actions/announcements";
+import {
+  getAnnouncementsForPurok,
+  getReadAnnouncementIdsForUser,
+} from "@/lib/actions/announcements";
 import {
   getActiveEmergencyContactsCached,
   getResidentScheduleCached,
@@ -87,7 +90,11 @@ export default async function ResidentPortalPage() {
     purokId?: string;
     role?: string;
   };
-  const { schedule, announcements, contacts } = await getPortalData(user.purokId);
+  const [{ schedule, announcements, contacts }, readAnnouncementIds] =
+    await Promise.all([
+      getPortalData(user.purokId),
+      getReadAnnouncementIdsForUser(session.user.id),
+    ]);
 
   const barangayName =
     process.env.NEXT_PUBLIC_BARANGAY_NAME ?? "Barangay San Isidro";
@@ -120,9 +127,10 @@ export default async function ResidentPortalPage() {
           </Link>
 
           <div className="flex items-center gap-2">
-            <NotificationBell 
-              initialAnnouncements={announcements} 
-              purokId={user.purokId} 
+            <NotificationBell
+              initialAnnouncements={announcements}
+              initialReadIds={readAnnouncementIds}
+              purokId={user.purokId}
             />
             <Link
               href="/profile"

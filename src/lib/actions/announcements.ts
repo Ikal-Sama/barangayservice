@@ -4,7 +4,11 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { announcements, announcementPuroks } from "@/db/schema";
+import {
+  announcementPuroks,
+  announcementReads,
+  announcements,
+} from "@/db/schema";
 import { announcementSchema, type AnnouncementInput } from "@/lib/validations";
 import { eq } from "drizzle-orm";
 import { CACHE_TAGS } from "@/lib/cache-tags";
@@ -116,4 +120,55 @@ export async function deleteAnnouncement(
 
 export async function getAnnouncementsForPurok(purokId: string) {
   return getAnnouncementsForPurokCached(purokId);
+}
+
+// ── Resident announcement read state ──────────────────────────────────────────
+
+export async function getReadAnnouncementIdsForUser(
+  userId: string
+): Promise<string[]> {
+  const rows = await db
+    .select({ announcementId: announcementReads.announcementId })
+    .from(announcementReads)
+    .where(eq(announcementReads.userId, userId));
+
+  return rows.map((row) => row.announcementId);
+}
+
+export async function markAnnouncementsAsRead(
+  announcementIds: string[]
+): Promise<ActionResult> {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) {
+    return { success: false, error: "Unauthorized." };
+  }
+
+  const uniqueIds = Array.from(new Set(announcementIds.filter(Boolean)));
+  if (uniqueIds.length === 0) {
+    return { success: true, data: undefined, message: "No announcements to mark." };
+  }
+
+  try {
+    await db
+      .insert(announcementReads)
+      .values(
+        uniqueIds.map((announcementId) => ({
+          userId: session.user.id,
+          announcementId,
+        }))
+      )
+      .onConflictDoNothing();
+
+    return {
+      success: true,
+      data: undefined,
+      message: "Announcements marked as read.",
+    };
+  } catch (error) {
+    console.error("Failed to mark announcements as read:", error);
+    return {
+      success: false,
+      error: "Could not save read status. Please try again.",
+    };
+  }
 }

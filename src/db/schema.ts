@@ -248,6 +248,29 @@ export const announcementPuroks = pgTable(
 );
 
 // ─────────────────────────────────────────────
+// ANNOUNCEMENT READS  (per-resident read tracking)
+// ─────────────────────────────────────────────
+
+export const announcementReads = pgTable(
+  "announcement_reads",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    announcementId: uuid("announcement_id")
+      .notNull()
+      .references(() => announcements.id, { onDelete: "cascade" }),
+    readAt: timestamp("read_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.announcementId] }),
+    index("announcement_reads_user_idx").on(t.userId),
+  ]
+);
+
+// ─────────────────────────────────────────────
 // WASTE SCHEDULES  (per-purok collection status)
 // ─────────────────────────────────────────────
 
@@ -381,6 +404,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   announcements: many(announcements),
   documentRequests: many(documentRequests),
   incidentReports: many(incidentReports),
+  announcementReads: many(announcementReads),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -399,6 +423,21 @@ export const announcementsRelations = relations(
       references: [users.id],
     }),
     announcementPuroks: many(announcementPuroks),
+    announcementReads: many(announcementReads),
+  })
+);
+
+export const announcementReadsRelations = relations(
+  announcementReads,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [announcementReads.userId],
+      references: [users.id],
+    }),
+    announcement: one(announcements, {
+      fields: [announcementReads.announcementId],
+      references: [announcements.id],
+    }),
   })
 );
 
@@ -466,6 +505,9 @@ export type NewUser = typeof users.$inferInsert;
 
 export type Announcement = typeof announcements.$inferSelect;
 export type NewAnnouncement = typeof announcements.$inferInsert;
+
+export type AnnouncementRead = typeof announcementReads.$inferSelect;
+export type NewAnnouncementRead = typeof announcementReads.$inferInsert;
 
 export type WasteSchedule = typeof wasteSchedules.$inferSelect;
 export type NewWasteSchedule = typeof wasteSchedules.$inferInsert;
