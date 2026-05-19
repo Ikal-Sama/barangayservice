@@ -9,6 +9,8 @@ import Link from "next/link";
 import { MapPin, Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { loginWithPassword } from "@/lib/actions/auth";
+import Logo from "../../../components/logo";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -46,10 +48,8 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 hero-gradient rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 mb-3">
-            <MapPin className="w-7 h-7 text-white" />
-          </div>
-          <h1 className="text-2xl font-extrabold text-slate-900">BarangayLink</h1>
+          <Image src="/logo.png" alt="Logo" width={100} height={100} />
+          <h1 className="text-2xl font-extrabold text-slate-900 mt-2">Barangay<span className="text-blue-500">Link</span></h1>
           <p className="text-sm text-slate-500 mt-1">Sign in to your account</p>
         </div>
 

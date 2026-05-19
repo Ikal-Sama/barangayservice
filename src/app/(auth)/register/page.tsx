@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { getActivePuroks } from "@/lib/actions/puroks";
 import { registerResident } from "@/lib/actions/auth";
 import type { Purok } from "@/db/schema";
+import Logo from "@/components/logo";
+import Image from "next/image";
 
 function withTimeout<T>(promise: Promise<T>, ms = 12_000): Promise<T> {
   return Promise.race([
@@ -31,7 +33,7 @@ export default function RegisterPage() {
   const [puroks, setPuroks] = useState<Purok[]>([]);
 
   useEffect(() => {
-    getActivePuroks().then(setPuroks).catch(() => {});
+    getActivePuroks().then(setPuroks).catch(() => { });
   }, []);
 
   const {
@@ -68,11 +70,9 @@ export default function RegisterPage() {
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 hero-gradient rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 mb-3">
-            <MapPin className="w-7 h-7 text-white" />
-          </div>
-          <h1 className="text-2xl font-extrabold text-slate-900">Create Account</h1>
+        <div className="flex flex-col items-center mb-4">
+          <Image src="/logo.png" alt="Logo" width={100} height={100} />
+          <h1 className="text-2xl font-extrabold text-slate-900 mt-4">Create Account</h1>
           <p className="text-sm text-slate-500 mt-1">Join your barangay community portal</p>
         </div>
 
