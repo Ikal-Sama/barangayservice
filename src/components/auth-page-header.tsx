@@ -11,14 +11,6 @@ type AuthPageHeaderProps = {
 export function AuthPageHeader({ title, subtitle }: AuthPageHeaderProps) {
   return (
     <>
-      <Link
-        href="/"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-800"
-      >
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Back to home
-      </Link>
-
       <div className="mb-8 flex flex-col items-center">
         <Link
           href="/"
