@@ -166,7 +166,11 @@ http://localhost:3000
 ## Security Notes
 
 - Better Auth manages sessions and secure cookies.
-- Arcjet protects login and registration with bot detection and rate limiting.
+- Arcjet (`src/lib/arcjet.ts`) protects:
+  - Login and registration server actions (IP + email rate limits, bot detection, Shield WAF)
+  - Better Auth API POST routes (`/api/auth/sign-in/email`, sign-up, password change, etc.) so direct API abuse is blocked
+  - Resident document and incident report submissions (IP rate limit + Shield)
+- If `ARCJET_KEY` is unset, protection is skipped (fail-open) so local dev still works.
 - Middleware protects resident and admin routes.
 - Admin-only server actions verify the authenticated user's role before writing data.
 

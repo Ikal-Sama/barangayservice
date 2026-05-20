@@ -8,6 +8,7 @@ import { documentRequests } from "@/db/schema";
 import { documentRequestSchema, updateDocumentRequestStatusSchema, type DocumentRequestInput, type UpdateDocumentRequestStatusInput } from "@/lib/validations";
 import { eq, desc, count } from "drizzle-orm";
 import { CACHE_TAGS } from "@/lib/cache-tags";
+import { protectFormAction } from "@/lib/arcjet";
 
 type ActionResult<T = void> =
   | { success: true; data: T; message: string }
@@ -21,6 +22,11 @@ export async function createDocumentRequest(
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) {
     return { success: false, error: "Unauthorized." };
+  }
+
+  const arcjetDenial = await protectFormAction();
+  if (arcjetDenial) {
+    return arcjetDenial;
   }
 
   const parsed = documentRequestSchema.safeParse(raw);

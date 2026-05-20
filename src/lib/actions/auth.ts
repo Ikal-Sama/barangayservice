@@ -9,35 +9,11 @@ import {
   type RegisterInput,
 } from "@/lib/validations";
 import { auth } from "@/lib/auth";
+import { protectAuthAction } from "@/lib/arcjet";
 import { createId } from "@paralleldrive/cuid2";
 import { hashPassword } from "better-auth/crypto";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
-import arcjet, {
-  createRemoteClient,
-  detectBot,
-  request,
-  slidingWindow,
-} from "@arcjet/next";
-
-const aj = arcjet({
-  key: process.env.ARCJET_KEY!,
-  client: createRemoteClient({
-    timeout: 3000,
-  }),
-  characteristics: ["ip.src"],
-  rules: [
-    detectBot({
-      mode: "LIVE",
-      allow: ["CATEGORY:SEARCH_ENGINE"],
-    }),
-    slidingWindow({
-      mode: "LIVE",
-      interval: 60,
-      max: 15, // Max 15 auth attempts per 60s per IP
-    }),
-  ],
-});
 
 type AuthActionResult<T = void> =
   | { success: true; data: T; message: string }
@@ -61,23 +37,6 @@ export async function canAttemptPasswordSignIn(email: string) {
 export async function registerResident(
   raw: RegisterInput
 ): Promise<AuthActionResult<{ id: string }>> {
-  // Arcjet Rate Limiting & Bot Protection
-  const arcjetRequest = await request();
-  const decision = await aj.protect(arcjetRequest);
-
-  if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
-      return {
-        success: false,
-        error: "Too many registration attempts. Please slow down and try again later.",
-      };
-    }
-    return {
-      success: false,
-      error: "Automated requests are not allowed.",
-    };
-  }
-
   const parsed = registerSchema.safeParse(raw);
 
   if (!parsed.success) {
@@ -88,8 +47,13 @@ export async function registerResident(
     };
   }
 
-  const { name, password, mobileNumber, purokId } = parsed.data;
   const email = parsed.data.email.trim().toLowerCase();
+  const arcjetDenial = await protectAuthAction({ email });
+  if (arcjetDenial) {
+    return arcjetDenial;
+  }
+
+  const { name, password, mobileNumber, purokId } = parsed.data;
 
   const existingUser = await db.query.users.findFirst({
     where: eq(users.email, email),
@@ -151,23 +115,6 @@ export async function registerResident(
 export async function loginWithPassword(
   raw: LoginInput
 ): Promise<AuthActionResult<{ role: "admin" | "resident" }>> {
-  // Arcjet Rate Limiting & Bot Protection
-  const arcjetRequest = await request();
-  const decision = await aj.protect(arcjetRequest);
-
-  if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
-      return {
-        success: false,
-        error: "Too many login attempts. Please slow down and try again later.",
-      };
-    }
-    return {
-      success: false,
-      error: "Automated requests are not allowed.",
-    };
-  }
-
   const parsed = loginSchema.safeParse(raw);
 
   if (!parsed.success) {
@@ -179,6 +126,11 @@ export async function loginWithPassword(
   }
 
   const email = parsed.data.email.trim().toLowerCase();
+  const arcjetDenial = await protectAuthAction({ email });
+  if (arcjetDenial) {
+    return arcjetDenial;
+  }
+
   const password = parsed.data.password;
 
   const signInResult = await auth.api
