@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import {
   ArrowRight,
   Bell,
@@ -10,6 +11,7 @@ import {
   FileText,
 } from "lucide-react";
 import Logo from "@/components/logo";
+import { auth } from "@/lib/auth";
 
 const features = [
   {
@@ -63,9 +65,18 @@ const benefits = [
   },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
   const barangayName =
     process.env.NEXT_PUBLIC_BARANGAY_NAME ?? "Barangay San Isidro";
+
+  const session = await auth.api
+    .getSession({ headers: await headers() })
+    .catch(() => null);
+
+  const isAdmin = session?.user.role === "admin";
+  const isSignedIn = Boolean(session);
+  const dashboardHref = isAdmin ? "/admin" : "/portal";
+  const dashboardLabel = isAdmin ? "Admin dashboard" : "My portal";
 
   return (
     <main className="min-h-screen bg-app-grid text-slate-950">
@@ -84,18 +95,30 @@ export default function LandingPage() {
           </Link>
 
           <div className="flex items-center gap-2">
-            <Link
-              href="/login"
-              className="rounded-full px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-white hover:text-slate-950"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/register"
-              className="rounded-full bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-slate-950/15 transition hover:bg-cyan-900"
-            >
-              Register
-            </Link>
+            {isSignedIn ? (
+              <Link
+                href={dashboardHref}
+                className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-slate-950/15 transition hover:bg-cyan-900"
+              >
+                {dashboardLabel}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="rounded-full px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-white hover:text-slate-950"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/register"
+                  className="rounded-full bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-slate-950/15 transition hover:bg-cyan-900"
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -116,19 +139,31 @@ export default function LandingPage() {
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 py-4 text-sm font-black text-white shadow-xl shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-cyan-900"
-            >
-              Start as resident
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white/85 px-6 py-4 text-sm font-black text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
-            >
-              Admin sign in
-            </Link>
+            {isSignedIn ? (
+              <Link
+                href={dashboardHref}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 py-4 text-sm font-black text-white shadow-xl shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-cyan-900"
+              >
+                Go to {dashboardLabel.toLowerCase()}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/register"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 py-4 text-sm font-black text-white shadow-xl shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-cyan-900"
+                >
+                  Start as resident
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white/85 px-6 py-4 text-sm font-black text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
+                >
+                  Admin sign in
+                </Link>
+              </>
+            )}
           </div>
         </div>
 

@@ -6,11 +6,10 @@ import { loginSchema, type LoginInput } from "@/lib/validations";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
-import { MapPin, Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { loginWithPassword } from "@/lib/actions/auth";
-import Logo from "../../../components/logo";
-import Image from "next/image";
+import { AuthPageHeader } from "@/components/auth-page-header";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -46,12 +45,14 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <Image src="/logo.png" alt="Logo" width={100} height={100} />
-          <h1 className="text-2xl font-extrabold text-slate-900 mt-2">Barangay<span className="text-blue-500">Link</span></h1>
-          <p className="text-sm text-slate-500 mt-1">Sign in to your account</p>
-        </div>
+        <AuthPageHeader
+          title={
+            <>
+              Barangay<span className="text-blue-500">Link</span>
+            </>
+          }
+          subtitle="Sign in to your account"
+        />
 
         {/* Card */}
         <div className="glass-card p-6">

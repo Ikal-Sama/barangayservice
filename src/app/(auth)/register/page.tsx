@@ -6,13 +6,12 @@ import { registerSchema, type RegisterInput } from "@/lib/validations";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { MapPin, Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { getActivePuroks } from "@/lib/actions/puroks";
 import { registerResident } from "@/lib/actions/auth";
 import type { Purok } from "@/db/schema";
-import Logo from "@/components/logo";
-import Image from "next/image";
+import { AuthPageHeader } from "@/components/auth-page-header";
 
 function withTimeout<T>(promise: Promise<T>, ms = 12_000): Promise<T> {
   return Promise.race([
@@ -69,12 +68,10 @@ export default function RegisterPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-4">
-          <Image src="/logo.png" alt="Logo" width={100} height={100} />
-          <h1 className="text-2xl font-extrabold text-slate-900 mt-4">Create Account</h1>
-          <p className="text-sm text-slate-500 mt-1">Join your barangay community portal</p>
-        </div>
+        <AuthPageHeader
+          title="Create Account"
+          subtitle="Join your barangay community portal"
+        />
 
         <div className="glass-card p-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
