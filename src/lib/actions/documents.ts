@@ -8,6 +8,7 @@ import { documentRequests } from "@/db/schema";
 import { documentRequestSchema, updateDocumentRequestStatusSchema, type DocumentRequestInput, type UpdateDocumentRequestStatusInput } from "@/lib/validations";
 import { eq, desc, count } from "drizzle-orm";
 import { CACHE_TAGS } from "@/lib/cache-tags";
+import { broadcastMessage } from "@/lib/actions/broadcast";
 import { protectFormAction } from "@/lib/arcjet";
 
 type ActionResult<T = void> =
@@ -53,6 +54,12 @@ export async function createDocumentRequest(
   revalidatePath("/portal/documents");
   revalidatePath("/admin/documents");
   revalidateTag(CACHE_TAGS.documentRequests);
+  // Notify the request owner about the status change
+  await broadcastMessage({
+    subject: `Document request status update`,
+    html: `<p>Your document request (ID: ${newRequest.id}) is now <strong>pending</strong>.</p>`,
+    // No purok filter; broadcastMessage will resolve the owner via email preferences
+  });
 
   return {
     success: true,
@@ -94,6 +101,12 @@ export async function updateDocumentRequestStatus(
   revalidatePath("/portal/documents");
   revalidatePath("/admin/documents");
   revalidateTag(CACHE_TAGS.documentRequests);
+  // Notify the request owner about the status change
+  await broadcastMessage({
+    subject: `Document request status update`,
+    html: `<p>Your document request (ID: ${id}) is now <strong>${status}</strong>.</p>`,
+    // No purok filter; broadcastMessage will resolve the owner via email preferences
+  });
 
   return { success: true, data: undefined, message: "Request status updated." };
 }
