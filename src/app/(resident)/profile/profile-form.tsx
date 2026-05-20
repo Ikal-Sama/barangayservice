@@ -17,6 +17,9 @@ interface ProfileFormProps {
     email: string;
     mobileNumber?: string;
     purokId?: string;
+    notifyEmail?: boolean;
+    notifySms?: boolean;
+    notifyPush?: boolean;
   };
   puroks: Purok[];
 }
