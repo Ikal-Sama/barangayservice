@@ -106,7 +106,7 @@ export default function ProfileForm({ user, puroks }: ProfileFormProps) {
           className="w-full px-3.5 py-3 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition"
           {...register("name")}
         />
-        {errors.name && <p className="mt-1.5 text-xs text-red-600">{errors.name.message}</p>}
+        {errors.name && typeof errors.name.message === 'string' && <p className="mt-1.5 text-xs text-red-600">{errors.name.message}</p>}
       </div>
 
       <div>
@@ -120,7 +120,7 @@ export default function ProfileForm({ user, puroks }: ProfileFormProps) {
           className="w-full px-3.5 py-3 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition"
           {...register("mobileNumber")}
         />
-        {errors.mobileNumber && (
+        {errors.mobileNumber && typeof errors.mobileNumber.message === 'string' && (
           <p className="mt-1.5 text-xs text-red-600">{errors.mobileNumber.message}</p>
         )}
       </div>
@@ -139,7 +139,7 @@ export default function ProfileForm({ user, puroks }: ProfileFormProps) {
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
         </select>
-        {errors.purokId && <p className="mt-1.5 text-xs text-red-600">{errors.purokId.message}</p>}
+        {errors.purokId && typeof errors.purokId.message === 'string' && <p className="mt-1.5 text-xs text-red-600">{errors.purokId.message}</p>}
       </div>
 
 {/* Notification preferences */}
