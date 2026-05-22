@@ -32,6 +32,7 @@ export default function AnnouncementsClient({
   const [showForm, setShowForm] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [items, setItems] = useState(initialAnnouncements);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const {
     register,
@@ -59,9 +60,16 @@ export default function AnnouncementsClient({
     window.location.reload();
   }
 
-  function handleDelete(id: string) {
+  function confirmDelete(id: string) {
+    setDeleteConfirmId(id);
+  }
+
+  function executeDelete() {
+    if (!deleteConfirmId) return;
+    const id = deleteConfirmId;
     startTransition(async () => {
       const result = await deleteAnnouncement(id);
+      setDeleteConfirmId(null);
       if (!result.success) { toast.error(result.error); return; }
       setItems((prev) => prev.filter((a) => a.id !== id));
       toast.success("Announcement removed.");
@@ -184,7 +192,7 @@ export default function AnnouncementsClient({
                         <p className="text-xs text-slate-400 mt-1.5">By {a.author.name}</p>
                       </div>
                       <button
-                        onClick={() => handleDelete(a.id)}
+                        onClick={() => confirmDelete(a.id)}
                         disabled={isPending}
                         className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors flex-shrink-0"
                         aria-label={`Delete announcement: ${a.title}`}
@@ -199,6 +207,35 @@ export default function AnnouncementsClient({
           )}
         </section>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-in zoom-in-95">
+            <h3 className="text-lg font-bold text-slate-900 mb-2">Delete Announcement?</h3>
+            <p className="text-sm text-slate-500 mb-6">
+              Are you sure you want to delete this announcement? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                disabled={isPending}
+                className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={executeDelete}
+                disabled={isPending}
+                className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition flex items-center gap-2"
+              >
+                {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
