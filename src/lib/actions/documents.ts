@@ -55,11 +55,15 @@ export async function createDocumentRequest(
   revalidatePath("/admin/documents");
   revalidateTag(CACHE_TAGS.documentRequests);
   // Notify the request owner about the status change
-  await broadcastMessage({
-    subject: `Document request status update`,
-    html: `<p>Your document request (ID: ${newRequest.id}) is now <strong>pending</strong>.</p>`,
-    // No purok filter; broadcastMessage will resolve the owner via email preferences
-  });
+  try {
+    await broadcastMessage({
+      subject: `Document request status update`,
+      html: `<p>Your document request (ID: ${newRequest.id}) is now <strong>pending</strong>.</p>`,
+      userId: session.user.id,
+    });
+  } catch (err) {
+    console.error("broadcastMessage failed for request", { requestId: newRequest.id, err });
+  }
 
   return {
     success: true,
@@ -89,24 +93,31 @@ export async function updateDocumentRequestStatus(
 
   const { id, status, adminNotes } = parsed.data;
 
-  await db
+  const [updatedReq] = await db
     .update(documentRequests)
     .set({ 
       status, 
       adminNotes: adminNotes || null, 
       updatedAt: new Date() 
     })
-    .where(eq(documentRequests.id, id));
+    .where(eq(documentRequests.id, id))
+    .returning();
 
   revalidatePath("/portal/documents");
   revalidatePath("/admin/documents");
   revalidateTag(CACHE_TAGS.documentRequests);
   // Notify the request owner about the status change
-  await broadcastMessage({
-    subject: `Document request status update`,
-    html: `<p>Your document request (ID: ${id}) is now <strong>${status}</strong>.</p>`,
-    // No purok filter; broadcastMessage will resolve the owner via email preferences
-  });
+  if (updatedReq && updatedReq.userId) {
+    try {
+      await broadcastMessage({
+        subject: `Document request status update`,
+        html: `<p>Your document request (ID: ${id}) is now <strong>${status}</strong>.</p>`,
+        userId: updatedReq.userId,
+      });
+    } catch (err) {
+      console.error("broadcastMessage failed for request", { requestId: id, err });
+    }
+  }
 
   return { success: true, data: undefined, message: "Request status updated." };
 }

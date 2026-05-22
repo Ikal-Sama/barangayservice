@@ -1,9 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git checkout *)",
-      "Bash(npm install *)",
-      "Bash(npm run *)"
+      "Bash(git checkout Fix-ui)",
+      "Bash(npm install)",
+      "Bash(npm run dev)",
+      "Bash(npm run build)"
     ]
   }
 }

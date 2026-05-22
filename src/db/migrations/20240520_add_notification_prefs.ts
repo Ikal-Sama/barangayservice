@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
+import type { DB } from '../index';
 
-export async function up(db: any) {
+export async function up(db: DB) {
   await db.run(sql`
     ALTER TABLE users
     ADD COLUMN notify_email boolean NOT NULL DEFAULT true,
@@ -9,7 +10,7 @@ export async function up(db: any) {
   `);
 }
 
-export async function down(db: any) {
+export async function down(db: DB) {
   await db.run(sql`
     ALTER TABLE users
     DROP COLUMN notify_email,

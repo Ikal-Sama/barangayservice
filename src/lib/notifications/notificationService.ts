@@ -45,7 +45,7 @@ class NotificationService {
     });
   }
 
-  // TODO: add SMS support (e.g., Twilio) when credentials are provided.
+
 }
 
 export const notificationService = new NotificationService();

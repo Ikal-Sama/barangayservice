@@ -24,6 +24,12 @@ interface ProfileFormProps {
   puroks: Purok[];
 }
 
+interface UpdateProfileForm extends UpdateProfileInput {
+  notifyEmail?: boolean;
+  notifySms?: boolean;
+  notifyPush?: boolean;
+}
+
 export default function ProfileForm({ user, puroks }: ProfileFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -32,7 +38,7 @@ export default function ProfileForm({ user, puroks }: ProfileFormProps) {
     register,
     handleSubmit,
     formState: { errors, isDirty },
-  } = useForm<any>({
+  } = useForm<UpdateProfileForm>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
       name: user.name || "",
@@ -44,7 +50,7 @@ export default function ProfileForm({ user, puroks }: ProfileFormProps) {
     },
   });
 
-  async function onSubmit(data: any) {
+  async function onSubmit(data: UpdateProfileForm) {
     setLoading(true);
     try {
       // Update basic profile fields
@@ -146,15 +152,15 @@ export default function ProfileForm({ user, puroks }: ProfileFormProps) {
 <div className="mt-4">
   <p className="text-sm font-medium mb-2">Notification Preferences</p>
   <label className="flex items-center space-x-2 mb-2">
-    <input type="checkbox" {...register("notifyEmail")} defaultChecked={!!user.notifyEmail} />
+    <input type="checkbox" {...register("notifyEmail")} />
     <span>Email</span>
   </label>
   <label className="flex items-center space-x-2 mb-2">
-    <input type="checkbox" {...register("notifySms")} defaultChecked={!!user.notifySms} />
+    <input type="checkbox" {...register("notifySms")} />
     <span>SMS</span>
   </label>
   <label className="flex items-center space-x-2">
-    <input type="checkbox" {...register("notifyPush")} defaultChecked={!!user.notifyPush} />
+    <input type="checkbox" {...register("notifyPush")} />
     <span>Push</span>
   </label>
 </div>

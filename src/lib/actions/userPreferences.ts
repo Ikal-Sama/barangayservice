@@ -27,10 +27,16 @@ export async function updateNotificationPreferences(preferences: {
   if (typeof preferences.notifySms   === "boolean") update.notifySms   = preferences.notifySms;
   if (typeof preferences.notifyPush  === "boolean") update.notifyPush  = preferences.notifyPush;
 
-  await db.update(users).set(update).where(eq(users.id, session.user.id));
+  if (Object.keys(update).length === 0) {
+    return { success: false, error: "no_changes" } as const;
+  }
 
-  // Refresh the profile page after change
-  revalidatePath("/profile");
-
-  return { success: true } as const;
+  try {
+    await db.update(users).set(update).where(eq(users.id, session.user.id));
+    // Refresh the profile page after change
+    revalidatePath("/profile");
+    return { success: true } as const;
+  } catch (error) {
+    return { success: false, error } as const;
+  }
 }
