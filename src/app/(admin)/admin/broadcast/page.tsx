@@ -19,7 +19,7 @@ export default function BroadcastPage() {
   async function onSubmit(data: FormValues) {
     setLoading(true);
     try {
-      if (data.role === "") data.role = undefined;
+      if ((data.role as unknown) === "") data.role = undefined;
       const result = await broadcastMessage(data);
       if (result.success) {
         toast.success(`Broadcast sent to ${result.count} users.`);
