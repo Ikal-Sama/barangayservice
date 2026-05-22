@@ -1,6 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
+import { updateNotificationPreferences } from "@/lib/actions/userPreferences";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { updateProfileSchema, type UpdateProfileInput } from "@/lib/validations";
 import { authClient } from "@/lib/auth-client";
@@ -16,8 +17,17 @@ interface ProfileFormProps {
     email: string;
     mobileNumber?: string;
     purokId?: string;
+    notifyEmail?: boolean;
+    notifySms?: boolean;
+    notifyPush?: boolean;
   };
   puroks: Purok[];
+}
+
+interface UpdateProfileForm extends UpdateProfileInput {
+  notifyEmail?: boolean;
+  notifySms?: boolean;
+  notifyPush?: boolean;
 }
 
 export default function ProfileForm({ user, puroks }: ProfileFormProps) {
@@ -28,27 +38,41 @@ export default function ProfileForm({ user, puroks }: ProfileFormProps) {
     register,
     handleSubmit,
     formState: { errors, isDirty },
-  } = useForm<UpdateProfileInput>({
+  } = useForm<UpdateProfileForm>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
       name: user.name || "",
       mobileNumber: user.mobileNumber || "",
       purokId: user.purokId || "",
+      notifyEmail: !!user.notifyEmail,
+      notifySms: !!user.notifySms,
+      notifyPush: !!user.notifyPush,
     },
   });
 
-  async function onSubmit(data: UpdateProfileInput) {
+  async function onSubmit(data: UpdateProfileForm) {
     setLoading(true);
     try {
-      const result = await authClient.updateUser({
+      // Update basic profile fields
+      const profileResult = await authClient.updateUser({
         name: data.name,
         // @ts-expect-error Better Auth additional fields
         mobileNumber: data.mobileNumber,
         purokId: data.purokId,
       });
+      if (profileResult.error) {
+        toast.error(profileResult.error.message ?? "Failed to update profile.");
+        return;
+      }
 
-      if (result.error) {
-        toast.error(result.error.message ?? "Failed to update profile.");
+      // Update notification preferences
+      const prefResult = await updateNotificationPreferences({
+        notifyEmail: data.notifyEmail,
+        notifySms: data.notifySms,
+        notifyPush: data.notifyPush,
+      });
+      if (!prefResult.success) {
+        toast.error("Failed to update notification preferences.");
         return;
       }
 
@@ -88,7 +112,7 @@ export default function ProfileForm({ user, puroks }: ProfileFormProps) {
           className="w-full px-3.5 py-3 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition"
           {...register("name")}
         />
-        {errors.name && <p className="mt-1.5 text-xs text-red-600">{errors.name.message}</p>}
+        {errors.name && typeof errors.name.message === 'string' && <p className="mt-1.5 text-xs text-red-600">{errors.name.message}</p>}
       </div>
 
       <div>
@@ -102,7 +126,7 @@ export default function ProfileForm({ user, puroks }: ProfileFormProps) {
           className="w-full px-3.5 py-3 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition"
           {...register("mobileNumber")}
         />
-        {errors.mobileNumber && (
+        {errors.mobileNumber && typeof errors.mobileNumber.message === 'string' && (
           <p className="mt-1.5 text-xs text-red-600">{errors.mobileNumber.message}</p>
         )}
       </div>
@@ -121,8 +145,25 @@ export default function ProfileForm({ user, puroks }: ProfileFormProps) {
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
         </select>
-        {errors.purokId && <p className="mt-1.5 text-xs text-red-600">{errors.purokId.message}</p>}
+        {errors.purokId && typeof errors.purokId.message === 'string' && <p className="mt-1.5 text-xs text-red-600">{errors.purokId.message}</p>}
       </div>
+
+{/* Notification preferences */}
+<div className="mt-4">
+  <p className="text-sm font-medium mb-2">Notification Preferences</p>
+  <label className="flex items-center space-x-2 mb-2">
+    <input type="checkbox" {...register("notifyEmail")} />
+    <span>Email</span>
+  </label>
+  <label className="flex items-center space-x-2 mb-2">
+    <input type="checkbox" {...register("notifySms")} />
+    <span>SMS</span>
+  </label>
+  <label className="flex items-center space-x-2">
+    <input type="checkbox" {...register("notifyPush")} />
+    <span>Push</span>
+  </label>
+</div>
 
       <button
         type="submit"

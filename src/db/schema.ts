@@ -107,6 +107,9 @@ export const users = pgTable(
     image: text("image"),
     role: userRoleEnum("role").notNull().default("resident"),
     mobileNumber: text("mobile_number"),
+    notifyEmail: boolean("notify_email").notNull().default(true),
+    notifySms: boolean("notify_sms").notNull().default(true),
+    notifyPush: boolean("notify_push").notNull().default(true),
     purokId: uuid("purok_id").references(() => puroks.id, {
       onDelete: "set null",
     }),

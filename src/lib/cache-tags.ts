@@ -5,6 +5,7 @@ export const CACHE_TAGS = {
   wasteSchedules: "waste-schedules",
   documentRequests: "document-requests",
   incidentReports: "incident-reports",
+  broadcast: "broadcast",
 } as const;
 
 

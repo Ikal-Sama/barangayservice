@@ -8,6 +8,7 @@ import { documentRequests } from "@/db/schema";
 import { documentRequestSchema, updateDocumentRequestStatusSchema, type DocumentRequestInput, type UpdateDocumentRequestStatusInput } from "@/lib/validations";
 import { eq, desc, count } from "drizzle-orm";
 import { CACHE_TAGS } from "@/lib/cache-tags";
+import { broadcastMessage } from "@/lib/actions/broadcast";
 import { protectFormAction } from "@/lib/arcjet";
 
 type ActionResult<T = void> =
@@ -53,6 +54,16 @@ export async function createDocumentRequest(
   revalidatePath("/portal/documents");
   revalidatePath("/admin/documents");
   revalidateTag(CACHE_TAGS.documentRequests);
+  // Notify the request owner about the status change
+  try {
+    await broadcastMessage({
+      subject: `Document request status update`,
+      html: `<p>Your document request (ID: ${newRequest.id}) is now <strong>pending</strong>.</p>`,
+      userId: session.user.id,
+    });
+  } catch (err) {
+    console.error("broadcastMessage failed for request", { requestId: newRequest.id, err });
+  }
 
   return {
     success: true,
@@ -82,18 +93,31 @@ export async function updateDocumentRequestStatus(
 
   const { id, status, adminNotes } = parsed.data;
 
-  await db
+  const [updatedReq] = await db
     .update(documentRequests)
     .set({ 
       status, 
       adminNotes: adminNotes || null, 
       updatedAt: new Date() 
     })
-    .where(eq(documentRequests.id, id));
+    .where(eq(documentRequests.id, id))
+    .returning();
 
   revalidatePath("/portal/documents");
   revalidatePath("/admin/documents");
   revalidateTag(CACHE_TAGS.documentRequests);
+  // Notify the request owner about the status change
+  if (updatedReq && updatedReq.userId) {
+    try {
+      await broadcastMessage({
+        subject: `Document request status update`,
+        html: `<p>Your document request (ID: ${id}) is now <strong>${status}</strong>.</p>`,
+        userId: updatedReq.userId,
+      });
+    } catch (err) {
+      console.error("broadcastMessage failed for request", { requestId: id, err });
+    }
+  }
 
   return { success: true, data: undefined, message: "Request status updated." };
 }

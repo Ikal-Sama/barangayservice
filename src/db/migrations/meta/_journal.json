@@ -15,6 +15,13 @@
       "when": 1779187149311,
       "tag": "0001_goofy_marrow",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779277132482,
+      "tag": "0002_amusing_human_fly",
+      "breakpoints": true
     }
   ]
 }
