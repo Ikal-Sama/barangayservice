@@ -106,10 +106,7 @@ export default async function ResidentPortalPage() {
     <main className="min-h-screen bg-app-grid pb-safe-bottom text-slate-950">
       <header className="sticky top-0 z-40 border-b border-white/70 bg-white/80 px-4 py-3 backdrop-blur-2xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <Link
-            href="/profile"
-            className="flex min-w-0 items-center gap-3 rounded-2xl pr-3 transition hover:bg-white"
-          >
+          <div className="flex min-w-0 items-center gap-3 rounded-2xl pr-3">
             <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-slate-950 text-white shadow-lg shadow-slate-950/15">
               <MapPin className="h-5 w-5" />
             </div>
@@ -121,10 +118,9 @@ export default async function ResidentPortalPage() {
                 <p className="truncate text-sm font-black text-slate-950">
                   {user.name}
                 </p>
-                <ChevronRight className="h-4 w-4 text-slate-400" />
               </div>
             </div>
-          </Link>
+          </div>
 
           <div className="flex items-center gap-2">
             <NotificationBell
@@ -132,13 +128,7 @@ export default async function ResidentPortalPage() {
               initialReadIds={readAnnouncementIds}
               purokId={user.purokId}
             />
-            <Link
-              href="/profile"
-              className="grid h-10 w-10 place-items-center rounded-2xl bg-white text-slate-500 shadow-sm transition hover:text-slate-950"
-              aria-label="Profile settings"
-            >
-              <Settings className="h-4 w-4" />
-            </Link>
+
             <SignOutButton />
           </div>
         </div>
